@@ -1,0 +1,29 @@
+class SettingsKeys {
+  static const String uiLanguage = 'ui_language';
+  static const String skipBackwardSeconds = 'skip_backward_seconds';
+  static const String skipForwardSeconds = 'skip_forward_seconds';
+  static const String playbackSpeed = 'playback_speed';
+  static const String subtitleFontSize = 'subtitle_font_size';
+  static const String subtitleBottomMarginPercent = 'subtitle_bottom_margin_percent';
+  static const String subtitleDelayMs = 'subtitle_delay_ms';
+  static const String subtitleEncoding = 'subtitle_encoding';
+  static const String overrideAssStyling = 'override_ass_styling';
+  static const String snapshotIncludeSubtitles = 'snapshot_include_subtitles';
+  static const String aspectRatioMode = 'aspect_ratio_mode';
+  static const String orientationLock = 'orientation_lock';
+  static const String hardwareAcceleration = 'hardware_acceleration';
+  static const String audioNormalization = 'audio_normalization';
+  static const String voiceClarityBoost = 'voice_clarity_boost';
+  static const String showAudioEventTags = 'show_audio_event_tags';
+  static const String playMode = 'play_mode';
+  static const String repeatMode = 'repeat_mode';
+  static const String queueSortOrder = 'queue_sort_order';
+  static const String includeSubfolders = 'include_subfolders';
+  static const String asrLanguageMode = 'asr_language_mode';
+  static const String recentDirectories = 'recent_directories';
+  static const String playbackPositions = 'playback_positions';
+  static const String sleepTimerMode = 'sleep_timer_mode';
+  static const String sleepTimerCustomMinutes = 'sleep_timer_custom_minutes';
+  static const String miniPlayerAlwaysOnTop = 'mini_player_always_on_top';
+  static const String recordPlaybackHistory = 'record_playback_history';
+}
