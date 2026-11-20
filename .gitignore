@@ -25,7 +25,7 @@ android/.idea/
 android/captures/
 android/app/src/main/res/mipmap-*/
 
-# Flutter
+# Flutter & Build Artifacts
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
@@ -33,3 +33,7 @@ android/app/src/main/res/mipmap-*/
 .pub-cache/
 .pub/
 build/
+
+# Windows Desktop
+windows/flutter/ephemeral/
+

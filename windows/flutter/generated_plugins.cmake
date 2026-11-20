@@ -6,6 +6,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   charset_converter
   file_selector_windows
   media_kit_libs_windows_video
+  permission_handler_windows
   screen_retriever
   volume_controller
   media_kit_video
