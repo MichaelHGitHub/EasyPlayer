@@ -144,7 +144,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
         await [
           Permission.audio,
           Permission.videos,
+          Permission.photos,
           Permission.storage,
+          Permission.manageExternalStorage,
         ].request();
       } catch (_) {}
     }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../controllers/ab_repeat_controller.dart';
 import '../../controllers/caption_controller.dart';
@@ -141,26 +142,8 @@ class PlaybackControls extends StatelessWidget {
                           }
                         : null,
                   ),
-                  // Volume Slider & Mute
-                  IconButton(
-                    icon: Icon(
-                      playerController.isMuted || playerController.volume == 0
-                          ? Icons.volume_off
-                          : Icons.volume_up,
-                      color: Colors.white,
-                    ),
-                    tooltip: 'Mute (M)',
-                    onPressed: () => playerController.toggleMute(),
-                  ),
-                  SizedBox(
-                    width: 70,
-                    child: Slider(
-                      value: playerController.isMuted ? 0.0 : playerController.volume,
-                      min: 0.0,
-                      max: 100.0,
-                      onChanged: (vol) => playerController.setVolume(vol),
-                    ),
-                  ),
+                  // Expandable Vertical Volume Control
+                  VerticalVolumeControl(playerController: playerController),
                 ],
               ),
 
@@ -305,4 +288,152 @@ class PlaybackControls extends StatelessWidget {
     ),
   );
 }
+}
+
+class VerticalVolumeControl extends StatelessWidget {
+  final PlayerController playerController;
+
+  const VerticalVolumeControl({super.key, required this.playerController});
+
+  @override
+  Widget build(BuildContext context) {
+    return PopupMenuButton<void>(
+      tooltip: 'Volume',
+      offset: const Offset(-4, -250),
+      constraints: const BoxConstraints(
+        minWidth: 50,
+        maxWidth: 54,
+      ),
+      color: const Color(0xFF1E293B),
+      elevation: 8,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: Colors.white24, width: 1),
+      ),
+      child: ListenableBuilder(
+        listenable: playerController,
+        builder: (context, _) {
+          final bool isMuted = playerController.isMuted || playerController.volume == 0;
+          final int volInt = isMuted ? 0 : playerController.volume.round();
+
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 8.0),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  isMuted ? Icons.volume_off : (volInt > 50 ? Icons.volume_up : Icons.volume_down),
+                  color: Colors.white,
+                  size: 22,
+                ),
+                const SizedBox(width: 2),
+                Text(
+                  '$volInt%',
+                  style: const TextStyle(color: Colors.white70, fontSize: 11),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+      itemBuilder: (context) => [
+        PopupMenuItem<void>(
+          enabled: false,
+          padding: EdgeInsets.zero,
+          child: ListenableBuilder(
+            listenable: playerController,
+            builder: (context, _) {
+              final double vol = playerController.isMuted ? 0.0 : playerController.volume;
+              final int currentVol = playerController.isMuted ? 0 : playerController.volume.round();
+              final bool currentlyMuted = playerController.isMuted || playerController.volume == 0;
+
+              return SizedBox(
+                width: 50,
+                height: 230,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Fixed height title text
+                      SizedBox(
+                        height: 20,
+                        width: 50,
+                        child: Center(
+                          child: Text(
+                            '$currentVol%',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      // Fixed length vertical volume bar centered
+                      SizedBox(
+                        height: 150,
+                        width: 50,
+                        child: Center(
+                          child: RotatedBox(
+                            quarterTurns: 3,
+                            child: SizedBox(
+                              width: 150,
+                              child: SliderTheme(
+                                data: const SliderThemeData(
+                                  trackHeight: 5,
+                                  thumbShape: RoundSliderThumbShape(enabledThumbRadius: 7),
+                                  activeTrackColor: Color(0xFF818CF8),
+                                  inactiveTrackColor: Colors.white24,
+                                  thumbColor: Color(0xFF818CF8),
+                                  overlayColor: Color(0x33818CF8),
+                                ),
+                                child: Slider(
+                                  value: vol.clamp(0.0, 100.0),
+                                  min: 0.0,
+                                  max: 100.0,
+                                  onChanged: (newVol) {
+                                    if (playerController.isMuted) {
+                                      playerController.toggleMute();
+                                    }
+                                    playerController.setVolume(newVol);
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      // Mute toggle button centered
+                      SizedBox(
+                        height: 34,
+                        width: 50,
+                        child: Center(
+                          child: IconButton(
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            icon: Icon(
+                              currentlyMuted ? Icons.volume_off : Icons.volume_up,
+                              color: Colors.white70,
+                              size: 18,
+                            ),
+                            onPressed: () {
+                              playerController.toggleMute();
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
 }

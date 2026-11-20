@@ -37,7 +37,12 @@ class PlaylistController extends ChangeNotifier {
     if (!input.startsWith('content://')) return input;
 
     try {
-      final String decoded = Uri.decodeFull(input);
+      String decoded = Uri.decodeFull(input);
+      if (decoded.contains('%')) {
+        try {
+          decoded = Uri.decodeComponent(decoded);
+        } catch (_) {}
+      }
       String target = decoded;
 
       if (target.contains('/document/')) {
@@ -47,14 +52,15 @@ class PlaylistController extends ChangeNotifier {
       }
 
       if (target.contains('raw:')) {
-        return target.split('raw:').last;
+        final raw = target.split('raw:').last;
+        return raw;
       }
 
       if (target.contains(':')) {
         final parts = target.split(':');
         final drive = parts.first;
-        final rel = parts.sublist(1).join(':');
-        if (drive.contains('primary')) {
+        final rel = parts.sublist(1).join(':').replaceAll(RegExp(r'^/+'), '');
+        if (drive.contains('primary') || drive == '0') {
           return '/storage/emulated/0/$rel';
         } else if (drive.isNotEmpty && !drive.contains('/')) {
           return '/storage/$drive/$rel';
@@ -74,28 +80,59 @@ class PlaylistController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final Directory dir = Directory(normalizedPath);
       final List<File> mediaFiles = [];
 
-      Future<void> scanDir(bool recursive) async {
-        if (!await dir.exists()) return;
-        await for (final entity in dir.list(recursive: recursive, followLinks: false).handleError((err) {
-          debugPrint('Error accessing entity in $normalizedPath: $err');
-        })) {
-          final String path = entity.path;
-          final String ext = AppConstants.extractExtension(path);
-          if (AppConstants.isSupportedMedia(ext)) {
-            mediaFiles.add(File(path));
+      Future<void> scanDir(Directory targetDir, bool recursive) async {
+        if (!await targetDir.exists()) return;
+        try {
+          await for (final entity in targetDir.list(recursive: recursive, followLinks: false).handleError((err) {
+            debugPrint('Error accessing entity in ${targetDir.path}: $err');
+          })) {
+            final String path = entity.path;
+            final bool isFile = await FileSystemEntity.isFile(path);
+            if (isFile) {
+              final String ext = AppConstants.extractExtension(path);
+              if (AppConstants.isSupportedMedia(ext)) {
+                mediaFiles.add(File(path));
+              }
+            }
           }
+        } catch (e) {
+          debugPrint('Error scanning dir ${targetDir.path}: $e');
         }
       }
 
+      final Directory primaryDir = Directory(normalizedPath);
       // Initial scan
-      await scanDir(includeSubfolders);
+      await scanDir(primaryDir, includeSubfolders);
 
-      // Fallback: If no files were found in top directory and includeSubfolders was false, search subfolders automatically
+      // Fallback 1: If no files were found and includeSubfolders was false, search recursively
       if (mediaFiles.isEmpty && !includeSubfolders) {
-        await scanDir(true);
+        await scanDir(primaryDir, true);
+      }
+
+      // Fallback 2: Check common Android storage paths if no files were found
+      if (mediaFiles.isEmpty) {
+        final String lower = normalizedPath.toLowerCase();
+        final List<String> candidatePaths = [];
+        if (lower.contains('download')) {
+          candidatePaths.addAll(['/storage/emulated/0/Download', '/sdcard/Download']);
+        } else if (lower.contains('music')) {
+          candidatePaths.addAll(['/storage/emulated/0/Music', '/sdcard/Music']);
+        } else if (lower.contains('documents')) {
+          candidatePaths.add('/storage/emulated/0/Documents');
+        } else if (lower.contains('podcasts')) {
+          candidatePaths.add('/storage/emulated/0/Podcasts');
+        } else if (lower.contains('audio')) {
+          candidatePaths.add('/storage/emulated/0/Audio');
+        }
+
+        for (final cand in candidatePaths) {
+          if (cand != normalizedPath) {
+            await scanDir(Directory(cand), true);
+            if (mediaFiles.isNotEmpty) break;
+          }
+        }
       }
 
       // Natural sort by filename
