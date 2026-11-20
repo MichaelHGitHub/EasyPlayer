@@ -32,27 +32,70 @@ class PlaylistController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Converts SAF content URIs (e.g. content://.../tree/primary%3AMusic) to local file system paths
+  static String parseSafPath(String input) {
+    if (!input.startsWith('content://')) return input;
+
+    try {
+      final String decoded = Uri.decodeFull(input);
+      String target = decoded;
+
+      if (target.contains('/document/')) {
+        target = target.split('/document/').last;
+      } else if (target.contains('/tree/')) {
+        target = target.split('/tree/').last;
+      }
+
+      if (target.contains('raw:')) {
+        return target.split('raw:').last;
+      }
+
+      if (target.contains(':')) {
+        final parts = target.split(':');
+        final drive = parts.first;
+        final rel = parts.sublist(1).join(':');
+        if (drive.contains('primary')) {
+          return '/storage/emulated/0/$rel';
+        } else if (drive.isNotEmpty && !drive.contains('/')) {
+          return '/storage/$drive/$rel';
+        }
+      }
+    } catch (_) {}
+
+    return input;
+  }
+
   /// Loads all media files from a directory into the queue with natural sorting
   Future<void> loadDirectory(String dirPath, {bool includeSubfolders = false, String? initialFilePath}) async {
     _isLoading = true;
-    _currentDirectory = dirPath;
+    final String parsedPath = parseSafPath(dirPath);
+    final String normalizedPath = p.normalize(parsedPath);
+    _currentDirectory = normalizedPath;
     notifyListeners();
 
     try {
-      final Directory dir = Directory(dirPath);
-      final List<FileSystemEntity> entities = await dir.list(
-        recursive: includeSubfolders,
-        followLinks: false,
-      ).toList();
-
+      final Directory dir = Directory(normalizedPath);
       final List<File> mediaFiles = [];
-      for (final entity in entities) {
-        final String path = entity.path;
-        if (entity is File || FileSystemEntity.isFileSync(path)) {
-          if (AppConstants.isSupportedMedia(path)) {
+
+      Future<void> scanDir(bool recursive) async {
+        if (!await dir.exists()) return;
+        await for (final entity in dir.list(recursive: recursive, followLinks: false).handleError((err) {
+          debugPrint('Error accessing entity in $normalizedPath: $err');
+        })) {
+          final String path = entity.path;
+          final String ext = AppConstants.extractExtension(path);
+          if (AppConstants.isSupportedMedia(ext)) {
             mediaFiles.add(File(path));
           }
         }
+      }
+
+      // Initial scan
+      await scanDir(includeSubfolders);
+
+      // Fallback: If no files were found in top directory and includeSubfolders was false, search subfolders automatically
+      if (mediaFiles.isEmpty && !includeSubfolders) {
+        await scanDir(true);
       }
 
       // Natural sort by filename
@@ -60,20 +103,26 @@ class PlaylistController extends ChangeNotifier {
 
       final List<MediaItem> items = [];
       for (final file in mediaFiles) {
-        items.add(await MetadataExtractor.createInitialItem(file));
+        try {
+          items.add(await MetadataExtractor.createInitialItem(file));
+        } catch (e) {
+          debugPrint('Error creating item for ${file.path}: $e');
+        }
       }
 
       _queue = items;
 
       if (initialFilePath != null) {
-        _currentIndex = _queue.indexWhere((item) => item.filePath == initialFilePath);
+        final String parsedInitPath = parseSafPath(initialFilePath);
+        _currentIndex = _queue.indexWhere((item) => item.filePath == parsedInitPath || item.filePath == initialFilePath);
         if (_currentIndex == -1 && _queue.isNotEmpty) _currentIndex = 0;
       } else if (_queue.isNotEmpty) {
         _currentIndex = 0;
       } else {
         _currentIndex = -1;
       }
-    } catch (_) {
+    } catch (e, stackTrace) {
+      debugPrint('Error loading directory $dirPath: $e\n$stackTrace');
       _queue = [];
       _currentIndex = -1;
     } finally {
@@ -84,7 +133,8 @@ class PlaylistController extends ChangeNotifier {
 
   /// Sets single item or external file open
   Future<void> setSingleItem(String filePath) async {
-    final File file = File(filePath);
+    final String parsedPath = parseSafPath(filePath);
+    final File file = File(parsedPath);
     final MediaItem item = await MetadataExtractor.createInitialItem(file);
     _queue = [item];
     _currentIndex = 0;

@@ -10,10 +10,24 @@ class MetadataExtractor {
   static Future<MediaItem> createInitialItem(File file) async {
     final String path = file.path;
     final String fileName = p.basename(path);
-    final String ext = p.extension(path).toLowerCase().replaceAll('.', '');
-    final int size = await file.length();
+    final String ext = AppConstants.extractExtension(path);
+    int size = 0;
+    try {
+      size = await file.length();
+    } catch (_) {}
+
     final bool isVideo = AppConstants.isVideo(ext);
-    final String hash = await FastHybridHash.compute(file);
+    String hash = '';
+    try {
+      hash = await FastHybridHash.compute(file);
+    } catch (_) {
+      hash = path.hashCode.toString();
+    }
+
+    bool hasTranscript = false;
+    try {
+      hasTranscript = await StoragePaths.getTranscriptFile(hash).exists();
+    } catch (_) {}
 
     return MediaItem(
       id: hash,
@@ -22,7 +36,7 @@ class MetadataExtractor {
       extension: ext,
       fileSizeBytes: size,
       isVideo: isVideo,
-      hasCachedTranscript: await StoragePaths.getTranscriptFile(hash).exists(),
+      hasCachedTranscript: hasTranscript,
     );
   }
 

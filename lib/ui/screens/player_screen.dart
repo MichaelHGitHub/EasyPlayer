@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../../controllers/ab_repeat_controller.dart';
 import '../../controllers/caption_controller.dart';
@@ -136,8 +138,21 @@ class _PlayerScreenState extends State<PlayerScreen> {
     }
   }
 
+  Future<void> _requestPermissions() async {
+    if (Platform.isAndroid) {
+      try {
+        await [
+          Permission.audio,
+          Permission.videos,
+          Permission.storage,
+        ].request();
+      } catch (_) {}
+    }
+  }
+
   Future<void> _openFilePicker() async {
     try {
+      await _requestPermissions();
       final XTypeGroup typeGroup = XTypeGroup(
         label: 'media',
         extensions: <String>[
@@ -173,6 +188,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
   Future<void> _openFolderPicker() async {
     try {
+      await _requestPermissions();
       final String? selectedDirectory = await getDirectoryPath(
         confirmButtonText: 'Select Folder',
       );
