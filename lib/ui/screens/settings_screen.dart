@@ -172,6 +172,59 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           ),
 
+          // Section: Playback & Navigation
+          _buildSectionHeader('Playback & Navigation'),
+          ListTile(
+            title: const Text('Fast Backward Duration', style: TextStyle(color: Colors.white)),
+            subtitle: Text(
+              '${s.skipBackwardSeconds} seconds',
+              style: const TextStyle(color: Colors.white54),
+            ),
+            trailing: DropdownButton<int>(
+              value: [5, 10, 15, 20, 25, 30].contains(s.skipBackwardSeconds) ? s.skipBackwardSeconds : 10,
+              dropdownColor: const Color(0xFF1E293B),
+              style: const TextStyle(color: Colors.white),
+              underline: const SizedBox(),
+              items: [5, 10, 15, 20, 25, 30].map((sec) {
+                return DropdownMenuItem<int>(
+                  value: sec,
+                  child: Text('${sec}s'),
+                );
+              }).toList(),
+              onChanged: (val) {
+                if (val != null) {
+                  _settingsService.update(SettingsKeys.skipBackwardSeconds, val, (set) => set.skipBackwardSeconds = val);
+                  setState(() {});
+                }
+              },
+            ),
+          ),
+          ListTile(
+            title: const Text('Fast Forward Duration', style: TextStyle(color: Colors.white)),
+            subtitle: Text(
+              '${s.skipForwardSeconds} seconds',
+              style: const TextStyle(color: Colors.white54),
+            ),
+            trailing: DropdownButton<int>(
+              value: [5, 10, 15, 20, 25, 30].contains(s.skipForwardSeconds) ? s.skipForwardSeconds : 10,
+              dropdownColor: const Color(0xFF1E293B),
+              style: const TextStyle(color: Colors.white),
+              underline: const SizedBox(),
+              items: [5, 10, 15, 20, 25, 30].map((sec) {
+                return DropdownMenuItem<int>(
+                  value: sec,
+                  child: Text('${sec}s'),
+                );
+              }).toList(),
+              onChanged: (val) {
+                if (val != null) {
+                  _settingsService.update(SettingsKeys.skipForwardSeconds, val, (set) => set.skipForwardSeconds = val);
+                  setState(() {});
+                }
+              },
+            ),
+          ),
+
           // Section: Audio Enhancements
           _buildSectionHeader('Audio Enhancements'),
           SwitchListTile(

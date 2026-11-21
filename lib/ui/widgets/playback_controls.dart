@@ -6,6 +6,7 @@ import '../../controllers/player_controller.dart';
 import '../../controllers/playlist_controller.dart';
 import '../../models/subtitle_cue.dart';
 import '../../services/asr_service.dart';
+import '../../services/settings_service.dart';
 
 class PlaybackControls extends StatelessWidget {
   final PlayerController playerController;
@@ -37,6 +38,41 @@ class PlaybackControls extends StatelessWidget {
       return '$hours:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
     }
     return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+  }
+
+  Widget _buildSeekButton({
+    required IconData iconData,
+    required int seconds,
+    required String tooltip,
+    required VoidCallback onPressed,
+  }) {
+    return IconButton(
+      tooltip: tooltip,
+      onPressed: onPressed,
+      icon: SizedBox(
+        width: 30,
+        height: 30,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Icon(iconData, size: 30, color: Colors.white),
+            Padding(
+              padding: const EdgeInsets.only(top: 1.0),
+              child: Text(
+                '$seconds',
+                style: const TextStyle(
+                  fontSize: 7.5,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.5,
+                  color: Colors.white,
+                  height: 1.0,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -109,11 +145,18 @@ class PlaybackControls extends StatelessWidget {
                           }
                         : null,
                   ),
-                  // Jump -5s
-                  IconButton(
-                    icon: const Icon(Icons.replay_5, color: Colors.white),
-                    tooltip: 'Seek -5s',
-                    onPressed: () => playerController.seekBackward(5),
+                  // Jump Backward
+                  ListenableBuilder(
+                    listenable: SettingsService.instance,
+                    builder: (context, _) {
+                      final int skipBack = SettingsService.instance.settings.skipBackwardSeconds;
+                      return _buildSeekButton(
+                        iconData: Icons.rotate_left,
+                        seconds: skipBack,
+                        tooltip: 'Seek -${skipBack}s',
+                        onPressed: () => playerController.seekBackward(skipBack),
+                      );
+                    },
                   ),
                   // Play / Pause
                   IconButton(
@@ -125,11 +168,18 @@ class PlaybackControls extends StatelessWidget {
                     tooltip: isPlaying ? 'Pause (Space)' : 'Play (Space)',
                     onPressed: () => playerController.playOrPause(),
                   ),
-                  // Jump +10s
-                  IconButton(
-                    icon: const Icon(Icons.forward_10, color: Colors.white),
-                    tooltip: 'Seek +10s',
-                    onPressed: () => playerController.seekForward(10),
+                  // Jump Forward
+                  ListenableBuilder(
+                    listenable: SettingsService.instance,
+                    builder: (context, _) {
+                      final int skipFwd = SettingsService.instance.settings.skipForwardSeconds;
+                      return _buildSeekButton(
+                        iconData: Icons.rotate_right,
+                        seconds: skipFwd,
+                        tooltip: 'Seek +${skipFwd}s',
+                        onPressed: () => playerController.seekForward(skipFwd),
+                      );
+                    },
                   ),
                   // Next
                   IconButton(

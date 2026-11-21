@@ -104,9 +104,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
     if (key == LogicalKeyboardKey.space) {
       _playerController.playOrPause();
     } else if (key == LogicalKeyboardKey.arrowLeft) {
-      _playerController.seekBackward(5);
+      _playerController.seekBackward(SettingsService.instance.settings.skipBackwardSeconds);
     } else if (key == LogicalKeyboardKey.arrowRight) {
-      _playerController.seekForward(10);
+      _playerController.seekForward(SettingsService.instance.settings.skipForwardSeconds);
     } else if (key == LogicalKeyboardKey.arrowUp) {
       _playerController.setVolume(_playerController.volume + 5.0);
     } else if (key == LogicalKeyboardKey.arrowDown) {

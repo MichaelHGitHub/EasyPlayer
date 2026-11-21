@@ -2,7 +2,7 @@ import 'playback_mode.dart';
 
 class AppSettings {
   String uiLanguage; // 'system', 'en', 'zh_CN'
-  int skipBackwardSeconds; // 5
+  int skipBackwardSeconds; // 10
   int skipForwardSeconds; // 10
   double playbackSpeed; // 1.0
   double subtitleFontSize; // 18.0
@@ -31,7 +31,7 @@ class AppSettings {
 
   AppSettings({
     this.uiLanguage = 'system',
-    this.skipBackwardSeconds = 5,
+    this.skipBackwardSeconds = 10,
     this.skipForwardSeconds = 10,
     this.playbackSpeed = 1.0,
     this.subtitleFontSize = 18.0,

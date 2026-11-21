@@ -25,7 +25,7 @@ class SettingsService extends ChangeNotifier {
 
     _settings = AppSettings(
       uiLanguage: dbSettings[SettingsKeys.uiLanguage] ?? 'system',
-      skipBackwardSeconds: int.tryParse(dbSettings[SettingsKeys.skipBackwardSeconds] ?? '') ?? 5,
+      skipBackwardSeconds: int.tryParse(dbSettings[SettingsKeys.skipBackwardSeconds] ?? '') ?? 10,
       skipForwardSeconds: int.tryParse(dbSettings[SettingsKeys.skipForwardSeconds] ?? '') ?? 10,
       playbackSpeed: double.tryParse(dbSettings[SettingsKeys.playbackSpeed] ?? '') ?? 1.0,
       subtitleFontSize: double.tryParse(dbSettings[SettingsKeys.subtitleFontSize] ?? '') ?? 18.0,
