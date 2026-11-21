@@ -121,6 +121,22 @@ class _PlayerScreenState extends State<PlayerScreen> {
       _abRepeatController.toggleActive(_playerController.position.inMilliseconds);
     } else if (key == LogicalKeyboardKey.keyS) {
       _playerController.captureSnapshot();
+    } else if (key == LogicalKeyboardKey.bracketLeft) {
+      final List<double> speeds = AppConstants.supportedPlaybackSpeeds;
+      final int currIndex = speeds.indexWhere((s) => (s - _playerController.speed).abs() < 0.05);
+      if (currIndex > 0) {
+        _playerController.setSpeed(speeds[currIndex - 1]);
+      } else if (currIndex == -1 && speeds.isNotEmpty) {
+        _playerController.setSpeed(speeds.first);
+      }
+    } else if (key == LogicalKeyboardKey.bracketRight) {
+      final List<double> speeds = AppConstants.supportedPlaybackSpeeds;
+      final int currIndex = speeds.indexWhere((s) => (s - _playerController.speed).abs() < 0.05);
+      if (currIndex != -1 && currIndex < speeds.length - 1) {
+        _playerController.setSpeed(speeds[currIndex + 1]);
+      } else if (currIndex == -1 && speeds.isNotEmpty) {
+        _playerController.setSpeed(speeds.first);
+      }
     } else if (key == LogicalKeyboardKey.escape) {
       if (_isFullscreen) {
         _toggleFullscreen();

@@ -5,6 +5,11 @@ class AppConstants {
   static const String windowsPackage = 'PandaSoft.EasyPlayer';
   static const String appVersion = '1.0.0';
 
+  // Playback speeds supported by EasyPlayer
+  static const List<double> supportedPlaybackSpeeds = [
+    0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 2.0
+  ];
+
   // Audio Extensions
   static const Set<String> audioExtensions = {
     'mp3', 'flac', 'wav', 'aac', 'm4a', 'ogg', 'opus', 'wma', 'alac', 'aiff', 'ape'

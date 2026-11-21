@@ -4,6 +4,7 @@ import '../../controllers/ab_repeat_controller.dart';
 import '../../controllers/caption_controller.dart';
 import '../../controllers/player_controller.dart';
 import '../../controllers/playlist_controller.dart';
+import '../../core/constants/app_constants.dart';
 import '../../models/subtitle_cue.dart';
 import '../../services/asr_service.dart';
 import '../../services/settings_service.dart';
@@ -207,7 +208,7 @@ class PlaybackControls extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
                       child: Text(
-                        '${playerController.speed}x',
+                        '${playerController.speed.toStringAsFixed(1)}x',
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -215,12 +216,22 @@ class PlaybackControls extends StatelessWidget {
                         ),
                       ),
                     ),
-                    itemBuilder: (context) => [0.5, 0.75, 1.0, 1.25, 1.5, 2.0].map((rate) {
-                      return PopupMenuItem<double>(
-                        value: rate,
-                        child: Text('${rate}x'),
-                      );
-                    }).toList(),
+                    itemBuilder: (context) {
+                      return AppConstants.supportedPlaybackSpeeds.map((rate) {
+                        final String label = '${rate.toStringAsFixed(1)}x';
+                        final bool isSelected = (playerController.speed - rate).abs() < 0.05;
+                        return PopupMenuItem<double>(
+                          value: rate,
+                          child: Text(
+                            label,
+                            style: TextStyle(
+                              color: isSelected ? const Color(0xFF818CF8) : Colors.white,
+                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            ),
+                          ),
+                        );
+                      }).toList();
+                    },
                     onSelected: (rate) => playerController.setSpeed(rate),
                   ),
 
