@@ -19,7 +19,8 @@
     <application
         android:label="EasyPlayer"
         android:name="${applicationName}"
-        android:icon="@android:drawable/sym_def_app_icon">
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round">
 
         <activity
             android:name=".MainActivity"
