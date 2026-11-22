@@ -181,25 +181,26 @@ class _PlayerScreenState extends State<PlayerScreen> {
   Future<void> _openFilePicker() async {
     try {
       await _requestPermissions();
-      final XTypeGroup typeGroup = XTypeGroup(
-        label: 'media',
-        extensions: <String>[
-          ...AppConstants.audioExtensions,
-          ...AppConstants.videoExtensions,
-        ],
-        mimeTypes: <String>[
-          'audio/*',
-          'video/*',
-          'audio/mpeg',
-          'audio/mp3',
-        ],
-      );
-      final XFile? file = await openFile(
-        acceptedTypeGroups: <XTypeGroup>[typeGroup],
-      );
+      String? filePath;
 
-      if (file != null) {
-        await _playlistController.setSingleItem(file.path);
+      if (Platform.isAndroid) {
+        filePath = await _appChannel.invokeMethod<String>('pickMediaFile');
+      } else {
+        final XTypeGroup typeGroup = XTypeGroup(
+          label: 'media',
+          extensions: <String>[
+            ...AppConstants.audioExtensions,
+            ...AppConstants.videoExtensions,
+          ],
+        );
+        final XFile? file = await openFile(
+          acceptedTypeGroups: <XTypeGroup>[typeGroup],
+        );
+        filePath = file?.path;
+      }
+
+      if (filePath != null && filePath.isNotEmpty) {
+        await _playlistController.setSingleItem(filePath);
         if (_playlistController.currentItem != null) {
           await _playerController.openMedia(_playlistController.currentItem!);
         }
