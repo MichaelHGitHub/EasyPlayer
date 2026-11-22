@@ -39,6 +39,16 @@ class _PlayerScreenState extends State<PlayerScreen> {
   bool _isFullscreen = false;
   final FocusNode _focusNode = FocusNode();
 
+  static const MethodChannel _appChannel = MethodChannel('com.pandasoft.easyplayer/app');
+
+  Future<void> _moveToBackground() async {
+    try {
+      await _appChannel.invokeMethod('moveToBackground');
+    } catch (_) {
+      SystemNavigator.pop();
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -238,7 +248,13 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return KeyboardListener(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, dynamic result) async {
+        if (didPop) return;
+        await _moveToBackground();
+      },
+      child: KeyboardListener(
       focusNode: _focusNode,
       autofocus: true,
       onKeyEvent: _handleKeyEvent,
@@ -417,6 +433,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }
