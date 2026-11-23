@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../controllers/ab_repeat_controller.dart';
@@ -287,14 +286,22 @@ class PlaybackControls extends StatelessWidget {
                       if (captionController.sourceType != SubtitleSourceType.off) {
                         captionController.setSourceType(SubtitleSourceType.off);
                       } else {
-                        captionController.setSourceType(SubtitleSourceType.autoASR);
                         final item = playlistController.currentItem;
                         if (item != null) {
-                          ASRService.instance.startTranscription(
-                            filePath: item.filePath,
-                            fastHash: item.id,
-                            duration: item.duration ?? playerController.duration,
-                          );
+                          final cachedCues = await ASRService.instance.checkCachedTranscript(item.id);
+                          if (cachedCues != null && cachedCues.isNotEmpty) {
+                            captionController.setCues(cachedCues);
+                            captionController.setSourceType(SubtitleSourceType.autoASR);
+                          } else {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('No transcript file found. Please use the "Start AI Transcription" button to generate script.'),
+                                  duration: Duration(seconds: 3),
+                                ),
+                              );
+                            }
+                          }
                         }
                       }
                     },

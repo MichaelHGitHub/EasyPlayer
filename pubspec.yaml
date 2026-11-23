@@ -35,6 +35,7 @@ dependencies:
   screen_retriever: ^0.1.9
   file_selector: ^1.0.3
   permission_handler: ^11.3.1
+  sherpa_onnx: ^2.0.3
 
 dev_dependencies:
   flutter_test:

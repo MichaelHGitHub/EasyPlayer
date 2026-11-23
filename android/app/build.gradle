@@ -22,6 +22,30 @@ if (flutterVersionName == null) {
     flutterVersionName = '1.0'
 }
 
+tasks.register("ensureGitLfsAssets") {
+    def modelFile = rootProject.file('../assets/models/model.int8.onnx')
+    onlyIf {
+        return !modelFile.exists() || modelFile.length() < 1024 * 1024
+    }
+    doLast {
+        println "Downloading Git LFS assets for EasyPlayer..."
+        exec {
+            workingDir rootProject.file('..')
+            commandLine 'git', 'lfs', 'pull', '--include=assets/models/model.int8.onnx'
+            ignoreExitValue = true
+        }
+        if (!modelFile.exists() || modelFile.length() < 1024 * 1024) {
+            logger.warn("WARNING: Failed to download assets/models/model.int8.onnx via Git LFS. Please run 'git lfs pull' manually.")
+        } else {
+            logger.lifecycle("Successfully downloaded assets/models/model.int8.onnx via Git LFS.")
+        }
+    }
+}
+
+tasks.named("preBuild") {
+    dependsOn "ensureGitLfsAssets"
+}
+
 android {
     namespace "com.pandasoft.easyplayer"
     compileSdk 36

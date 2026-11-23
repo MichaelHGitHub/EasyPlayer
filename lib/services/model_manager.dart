@@ -32,9 +32,9 @@ class ModelManager {
       // 1. Extract tokens.txt
       try {
         final ByteData tokensData = await rootBundle.load('assets/models/$tokensFileName');
-        await tokensFile.writeAsBytes(tokensData.buffer.asUint8List(), flush: true);
+        final Uint8List tokensBytes = tokensData.buffer.asUint8List(tokensData.offsetInBytes, tokensData.lengthInBytes);
+        await tokensFile.writeAsBytes(tokensBytes, flush: true);
       } catch (_) {
-        // Fallback: write standard default vocabulary header if asset not bundled
         if (!await tokensFile.exists()) {
           await tokensFile.writeAsString('<blank> 0\n<unk> 1\n<s> 2\n</s> 3\n', flush: true);
         }
@@ -45,17 +45,16 @@ class ModelManager {
       // 2. Extract model.int8.onnx
       try {
         final ByteData modelData = await rootBundle.load('assets/models/$onnxFileName');
-        final Uint8List bytes = modelData.buffer.asUint8List();
-        await onnxModelFile.writeAsBytes(bytes, flush: true);
+        final Uint8List modelBytes = modelData.buffer.asUint8List(modelData.offsetInBytes, modelData.lengthInBytes);
+        await onnxModelFile.writeAsBytes(modelBytes, flush: true);
       } catch (_) {
-        // Model asset placeholder for development/test environment
         if (!await onnxModelFile.exists()) {
           await onnxModelFile.writeAsBytes(Uint8List(2048), flush: true);
         }
       }
 
       onProgress?.call(1.0);
-      return true;
+      return await isModelReady();
     } catch (e) {
       // Cleanup corrupt files
       if (await onnxModelFile.exists()) await onnxModelFile.delete();

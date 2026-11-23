@@ -253,7 +253,9 @@ class _TranscriptSidebarState extends State<TranscriptSidebar> {
                       child: Text(
                         asrState.status == ASRStatus.modelLoading
                             ? 'Loading speech model...'
-                            : 'Transcribing speech: ${(asrState.progress * 100).toInt()}%',
+                            : asrState.status == ASRStatus.extractingAudio
+                                ? 'Extracting audio stream...'
+                                : 'Transcribing speech: ${(asrState.progress * 100).toInt()}%',
                         style: const TextStyle(fontSize: 11, color: Color(0xFF818CF8)),
                       ),
                     ),

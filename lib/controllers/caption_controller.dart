@@ -31,6 +31,19 @@ class CaptionController extends ChangeNotifier {
   final List<int> _searchMatchIndices = [];
   int _currentSearchMatchIndex = -1;
 
+  CaptionController() {
+    _asrService.addListener(_onASRServiceChanged);
+  }
+
+  void _onASRServiceChanged() {
+    final asrState = _asrService.state;
+    if (_sourceType == SubtitleSourceType.autoASR || (asrState.cues.isNotEmpty && _sourceType != SubtitleSourceType.off)) {
+      if (asrState.cues.isNotEmpty && _syncEngine.cues != asrState.cues) {
+        setCues(asrState.cues);
+      }
+    }
+  }
+
   SubtitleSourceType get sourceType => _sourceType;
   List<SidecarSubtitle> get sidecars => _sidecars;
   SidecarSubtitle? get selectedSidecar => _selectedSidecar;
@@ -69,6 +82,10 @@ class CaptionController extends ChangeNotifier {
     if (type == SubtitleSourceType.off) {
       _syncEngine.setCues([]);
       _currentCue = null;
+    } else if (type == SubtitleSourceType.autoASR) {
+      if (_asrService.state.cues.isNotEmpty) {
+        setCues(_asrService.state.cues);
+      }
     }
     notifyListeners();
   }
@@ -161,5 +178,11 @@ class CaptionController extends ChangeNotifier {
 
   void loopSentence(SubtitleCue cue, ABRepeatController abController) {
     abController.setSentenceLoop(cue.startMs, cue.endMs);
+  }
+
+  @override
+  void dispose() {
+    _asrService.removeListener(_onASRServiceChanged);
+    super.dispose();
   }
 }

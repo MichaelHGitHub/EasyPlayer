@@ -71,8 +71,19 @@ class _TrackSettingsDialogState extends State<TrackSettingsDialog> {
                 title: const Text('Auto-Generated ASR Captions', style: TextStyle(color: Colors.white)),
                 value: SubtitleSourceType.autoASR,
                 groupValue: caption.sourceType,
-                onChanged: (val) {
-                  setState(() => caption.setSourceType(SubtitleSourceType.autoASR));
+                onChanged: (val) async {
+                  if (caption.cues.isNotEmpty) {
+                    setState(() => caption.setSourceType(SubtitleSourceType.autoASR));
+                  } else {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('No transcript file found. Please use the "Start AI Transcription" button to generate script.'),
+                          duration: Duration(seconds: 3),
+                        ),
+                      );
+                    }
+                  }
                 },
               ),
               if (caption.sidecars.isNotEmpty) ...[

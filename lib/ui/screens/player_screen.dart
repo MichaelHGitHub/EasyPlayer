@@ -9,6 +9,7 @@ import '../../controllers/caption_controller.dart';
 import '../../controllers/player_controller.dart';
 import '../../controllers/playlist_controller.dart';
 import '../../core/constants/app_constants.dart';
+import '../../services/asr_service.dart';
 import '../../services/settings_service.dart';
 import '../../services/sleep_timer_service.dart';
 import '../widgets/audio_visualizer_viewport.dart';
@@ -156,11 +157,27 @@ class _PlayerScreenState extends State<PlayerScreen> {
     }
   }
 
-  void _toggleCC() {
+  Future<void> _toggleCC() async {
     if (_captionController.sourceType != SubtitleSourceType.off) {
       _captionController.setSourceType(SubtitleSourceType.off);
     } else {
-      _captionController.setSourceType(SubtitleSourceType.autoASR);
+      final item = _playlistController.currentItem;
+      if (item != null) {
+        final cachedCues = await ASRService.instance.checkCachedTranscript(item.id);
+        if (cachedCues != null && cachedCues.isNotEmpty) {
+          _captionController.setCues(cachedCues);
+          _captionController.setSourceType(SubtitleSourceType.autoASR);
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('No transcript file found. Please use the "Start AI Transcription" button to generate script.'),
+                duration: Duration(seconds: 3),
+              ),
+            );
+          }
+        }
+      }
     }
   }
 

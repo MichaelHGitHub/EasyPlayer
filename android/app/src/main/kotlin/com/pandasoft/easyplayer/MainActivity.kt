@@ -44,6 +44,20 @@ class MainActivity: FlutterActivity() {
                         result.error("ERROR", "Failed to launch picker: ${e.message}", null)
                     }
                 }
+                "extractAudio" -> {
+                    val inputPath = call.argument<String>("inputPath")
+                    val outputPath = call.argument<String>("outputPath")
+                    if (inputPath != null && outputPath != null) {
+                        Thread {
+                            val success = AudioExtractor.extractAudioToWav(context, inputPath, outputPath)
+                            runOnUiThread {
+                                result.success(success)
+                            }
+                        }.start()
+                    } else {
+                        result.error("INVALID_ARGS", "inputPath and outputPath required", null)
+                    }
+                }
                 else -> {
                     result.notImplemented()
                 }

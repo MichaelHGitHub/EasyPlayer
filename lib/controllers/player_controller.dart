@@ -134,6 +134,11 @@ class PlayerController extends ChangeNotifier {
     _hasVideo = item.isVideo;
     notifyListeners();
 
+    // 0. Reset previous transcript & cancel any active ASR task immediately
+    ASRService.instance.clearState();
+    captionController.setSourceType(SubtitleSourceType.off);
+    captionController.setCues([]);
+
     // 1. Start media_kit playback immediately
     await player.open(Media(item.filePath), play: true);
 
