@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../controllers/ab_repeat_controller.dart';
 import '../../controllers/caption_controller.dart';
@@ -42,7 +43,7 @@ class PlaybackControls extends StatelessWidget {
   }
 
   Widget _buildSeekButton({
-    required IconData iconData,
+    required bool isForward,
     required int seconds,
     required String tooltip,
     required VoidCallback onPressed,
@@ -56,7 +57,13 @@ class PlaybackControls extends StatelessWidget {
         child: Stack(
           alignment: Alignment.center,
           children: [
-            Icon(iconData, size: 30, color: Colors.white),
+            CustomPaint(
+              size: const Size(30, 30),
+              painter: SeekIconPainter(
+                isForward: isForward,
+                color: Colors.white,
+              ),
+            ),
             Padding(
               padding: const EdgeInsets.only(top: 1.0),
               child: Text(
@@ -152,7 +159,7 @@ class PlaybackControls extends StatelessWidget {
                     builder: (context, _) {
                       final int skipBack = SettingsService.instance.settings.skipBackwardSeconds;
                       return _buildSeekButton(
-                        iconData: Icons.rotate_left,
+                        isForward: false,
                         seconds: skipBack,
                         tooltip: 'Seek -${skipBack}s',
                         onPressed: () => playerController.seekBackward(skipBack),
@@ -175,7 +182,7 @@ class PlaybackControls extends StatelessWidget {
                     builder: (context, _) {
                       final int skipFwd = SettingsService.instance.settings.skipForwardSeconds;
                       return _buildSeekButton(
-                        iconData: Icons.rotate_right,
+                        isForward: true,
                         seconds: skipFwd,
                         tooltip: 'Seek +${skipFwd}s',
                         onPressed: () => playerController.seekForward(skipFwd),
@@ -496,5 +503,80 @@ class VerticalVolumeControl extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+class SeekIconPainter extends CustomPainter {
+  final bool isForward;
+  final Color color;
+
+  const SeekIconPainter({
+    required this.isForward,
+    this.color = Colors.white,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final double cx = size.width / 2;
+    final double cy = size.height / 2;
+    final double radius = size.width * 0.38;
+
+    final strokePaint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0
+      ..strokeCap = StrokeCap.round;
+
+    final fillPaint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+
+    // 10:30 position on clock face = -135° (-3pi/4 rad)
+    // 1:30 position on clock face = -45° (-pi/4 rad)
+    final double endAngle = isForward
+        ? -45 * (math.pi / 180)
+        : -135 * (math.pi / 180);
+
+    const double sweepDegrees = 270.0;
+    final double sweepAngle = isForward
+        ? sweepDegrees * (math.pi / 180)
+        : -sweepDegrees * (math.pi / 180);
+
+    final double startAngle = endAngle - sweepAngle;
+
+    final rect = Rect.fromCircle(center: Offset(cx, cy), radius: radius);
+    canvas.drawArc(rect, startAngle, sweepAngle, false, strokePaint);
+
+    // Calculate arrow tip position at endAngle
+    final double tipX = cx + radius * math.cos(endAngle);
+    final double tipY = cy + radius * math.sin(endAngle);
+
+    // Tangent direction angle at tip:
+    // Clockwise (forward): alpha = endAngle + pi/2
+    // Counter-clockwise (backward): alpha = endAngle - pi/2
+    final double alpha = isForward
+        ? endAngle + (math.pi / 2)
+        : endAngle - (math.pi / 2);
+
+    const double headLength = 5.5;
+    const double wingAngle = 30 * (math.pi / 180);
+
+    final double wing1X = tipX - headLength * math.cos(alpha - wingAngle);
+    final double wing1Y = tipY - headLength * math.sin(alpha - wingAngle);
+    final double wing2X = tipX - headLength * math.cos(alpha + wingAngle);
+    final double wing2Y = tipY - headLength * math.sin(alpha + wingAngle);
+
+    final arrowPath = Path()
+      ..moveTo(tipX, tipY)
+      ..lineTo(wing1X, wing1Y)
+      ..lineTo(wing2X, wing2Y)
+      ..close();
+
+    canvas.drawPath(arrowPath, fillPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant SeekIconPainter oldDelegate) {
+    return oldDelegate.isForward != isForward || oldDelegate.color != color;
   }
 }
