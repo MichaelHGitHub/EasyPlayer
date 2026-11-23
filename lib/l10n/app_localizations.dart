@@ -314,6 +314,12 @@ abstract class AppLocalizations {
   /// **'Loading speech model...'**
   String get modelLoading;
 
+  /// No description provided for @scriptGenerationNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Generating transcript script. Please wait until generation completes.'**
+  String get scriptGenerationNotice;
+
   /// No description provided for @transcriptReady.
   ///
   /// In en, this message translates to:

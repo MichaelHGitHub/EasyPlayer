@@ -1,7 +1,9 @@
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import '../models/subtitle_cue.dart';
 import '../services/asr_service.dart';
 import '../services/sidecar_detector.dart';
+import '../services/subtitle_parser.dart';
 import '../services/subtitle_sync_engine.dart';
 import 'ab_repeat_controller.dart';
 
@@ -76,16 +78,20 @@ class CaptionController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setSourceType(SubtitleSourceType type, {SidecarSubtitle? sidecar}) {
+  Future<void> setSourceType(SubtitleSourceType type, {SidecarSubtitle? sidecar}) async {
     _sourceType = type;
     _selectedSidecar = sidecar;
     if (type == SubtitleSourceType.off) {
-      _syncEngine.setCues([]);
       _currentCue = null;
     } else if (type == SubtitleSourceType.autoASR) {
       if (_asrService.state.cues.isNotEmpty) {
         setCues(_asrService.state.cues);
       }
+    } else if (type == SubtitleSourceType.sidecar && sidecar != null) {
+      try {
+        final cues = await SubtitleParser.parseFile(File(sidecar.path));
+        setCues(cues);
+      } catch (_) {}
     }
     notifyListeners();
   }
@@ -98,7 +104,7 @@ class CaptionController extends ChangeNotifier {
 
   /// Called on player position updates
   void updatePosition(int positionMs) {
-    if (_sourceType == SubtitleSourceType.off) {
+    if (_syncEngine.cues.isEmpty) {
       if (_currentCue != null) {
         _currentCue = null;
         notifyListeners();

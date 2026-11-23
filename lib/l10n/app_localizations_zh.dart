@@ -117,6 +117,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get modelLoading => '正在加载离线语音引擎...';
 
   @override
+  String get scriptGenerationNotice => '正在生成字幕脚本，建议等待生成完成...';
+
+  @override
   String get transcriptReady => '字幕已就绪';
 
   @override

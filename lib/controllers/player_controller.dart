@@ -159,7 +159,7 @@ class PlayerController extends ChangeNotifier {
     final cachedCues = await ASRService.instance.checkCachedTranscript(item.id);
     if (cachedCues != null) {
       captionController.setCues(cachedCues);
-      captionController.setSourceType(SubtitleSourceType.autoASR);
+      // Keep caption OFF by default for each media item. User can turn it on manually.
     }
   }
 

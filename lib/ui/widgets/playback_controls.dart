@@ -292,6 +292,11 @@ class PlaybackControls extends StatelessWidget {
                           if (cachedCues != null && cachedCues.isNotEmpty) {
                             captionController.setCues(cachedCues);
                             captionController.setSourceType(SubtitleSourceType.autoASR);
+                          } else if (captionController.sidecars.isNotEmpty) {
+                            captionController.setSourceType(
+                              SubtitleSourceType.sidecar,
+                              sidecar: captionController.sidecars.first,
+                            );
                           } else {
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(

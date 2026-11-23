@@ -4,6 +4,7 @@ import 'package:path_provider/path_provider.dart';
 import '../../controllers/ab_repeat_controller.dart';
 import '../../controllers/caption_controller.dart';
 import '../../controllers/player_controller.dart';
+import '../../l10n/app_localizations.dart';
 import '../../models/asr_state.dart';
 import '../../models/subtitle_cue.dart';
 import '../../services/asr_service.dart';
@@ -239,27 +240,66 @@ class _TranscriptSidebarState extends State<TranscriptSidebar> {
             ),
           ),
 
-          // ASR Progress Bar / Status
+          // ASR Progress Bar / Status & Notice Banner
           AnimatedBuilder(
             animation: ASRService.instance,
             builder: (context, _) {
               final asrState = ASRService.instance.state;
               if (asrState.isBusy) {
-                return Column(
-                  children: [
-                    LinearProgressIndicator(value: asrState.progress, color: const Color(0xFF6366F1)),
-                    Padding(
-                      padding: const EdgeInsets.all(4.0),
-                      child: Text(
-                        asrState.status == ASRStatus.modelLoading
-                            ? 'Loading speech model...'
-                            : asrState.status == ASRStatus.extractingAudio
-                                ? 'Extracting audio stream...'
-                                : 'Transcribing speech: ${(asrState.progress * 100).toInt()}%',
-                        style: const TextStyle(fontSize: 11, color: Color(0xFF818CF8)),
+                final l10n = AppLocalizations.of(context);
+                return Container(
+                  margin: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.all(10.0),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E1B4B),
+                    borderRadius: BorderRadius.circular(8.0),
+                    border: Border.all(color: const Color(0xFF6366F1).withOpacity(0.5)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const SizedBox(
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(strokeWidth: 2.0, color: Color(0xFF818CF8)),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              asrState.status == ASRStatus.modelLoading
+                                  ? (l10n?.modelLoading ?? 'Loading speech model...')
+                                  : asrState.status == ASRStatus.extractingAudio
+                                      ? 'Extracting audio stream...'
+                                      : '${l10n?.transcribing ?? 'Transcribing speech'}: ${(asrState.progress * 100).toInt()}%',
+                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF818CF8)),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 8),
+                      LinearProgressIndicator(
+                        value: asrState.progress,
+                        color: const Color(0xFF6366F1),
+                        backgroundColor: Colors.white12,
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(Icons.info_outline, size: 15, color: Color(0xFFFBBF24)),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              l10n?.scriptGenerationNotice ?? 'Generating transcript script. Please wait until generation completes.',
+                              style: const TextStyle(fontSize: 11, color: Color(0xFFFBBF24), height: 1.3),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 );
               }
               return const SizedBox.shrink();

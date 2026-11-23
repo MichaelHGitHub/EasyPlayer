@@ -117,6 +117,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get modelLoading => 'Loading speech model...';
 
   @override
+  String get scriptGenerationNotice =>
+      'Generating transcript script. Please wait until generation completes.';
+
+  @override
   String get transcriptReady => 'Transcript ready';
 
   @override

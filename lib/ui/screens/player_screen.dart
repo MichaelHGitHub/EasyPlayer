@@ -9,6 +9,8 @@ import '../../controllers/caption_controller.dart';
 import '../../controllers/player_controller.dart';
 import '../../controllers/playlist_controller.dart';
 import '../../core/constants/app_constants.dart';
+import '../../l10n/app_localizations.dart';
+import '../../models/asr_state.dart';
 import '../../services/asr_service.dart';
 import '../../services/settings_service.dart';
 import '../../services/sleep_timer_service.dart';
@@ -167,6 +169,11 @@ class _PlayerScreenState extends State<PlayerScreen> {
         if (cachedCues != null && cachedCues.isNotEmpty) {
           _captionController.setCues(cachedCues);
           _captionController.setSourceType(SubtitleSourceType.autoASR);
+        } else if (_captionController.sidecars.isNotEmpty) {
+          _captionController.setSourceType(
+            SubtitleSourceType.sidecar,
+            sidecar: _captionController.sidecars.first,
+          );
         } else {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -355,6 +362,62 @@ class _PlayerScreenState extends State<PlayerScreen> {
                                   captionController: _captionController,
                                 );
                               }
+                            },
+                          ),
+
+                          // Script Generation In-Progress Banner
+                          AnimatedBuilder(
+                            animation: ASRService.instance,
+                            builder: (context, _) {
+                              final asrState = ASRService.instance.state;
+                              if (!asrState.isBusy) return const SizedBox.shrink();
+
+                              final l10n = AppLocalizations.of(context);
+                              final String status = asrState.status == ASRStatus.modelLoading
+                                  ? (l10n?.modelLoading ?? 'Loading speech model...')
+                                  : asrState.status == ASRStatus.extractingAudio
+                                      ? 'Extracting audio...'
+                                      : '${l10n?.transcribing ?? 'Transcribing speech'}: ${(asrState.progress * 100).toInt()}%';
+
+                              final String notice = l10n?.scriptGenerationNotice ?? 'Generating transcript script. Please wait until generation completes.';
+
+                              return Align(
+                                alignment: Alignment.topCenter,
+                                child: Container(
+                                  margin: const EdgeInsets.only(top: 16.0, left: 16.0, right: 16.0),
+                                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xF01E1B4B),
+                                    borderRadius: BorderRadius.circular(24.0),
+                                    border: Border.all(color: const Color(0xFF6366F1).withOpacity(0.6)),
+                                    boxShadow: const [
+                                      BoxShadow(color: Colors.black45, blurRadius: 10, offset: Offset(0, 3)),
+                                    ],
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const SizedBox(
+                                        width: 14,
+                                        height: 14,
+                                        child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF818CF8)),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Flexible(
+                                        child: Text(
+                                          '$status — $notice',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
                             },
                           ),
 

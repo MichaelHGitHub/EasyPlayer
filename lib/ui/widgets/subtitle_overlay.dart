@@ -15,6 +15,10 @@ class SubtitleOverlay extends StatelessWidget {
     return AnimatedBuilder(
       animation: captionController,
       builder: (context, child) {
+        if (captionController.sourceType == SubtitleSourceType.off) {
+          return const SizedBox.shrink();
+        }
+
         final SubtitleCue? cue = captionController.currentCue;
         if (cue == null || cue.text.isEmpty) {
           return const SizedBox.shrink();
