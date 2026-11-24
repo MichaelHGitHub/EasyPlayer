@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show ScrollDirection;
 import 'package:path_provider/path_provider.dart';
 import '../../controllers/ab_repeat_controller.dart';
 import '../../controllers/caption_controller.dart';
@@ -31,38 +32,111 @@ class TranscriptSidebar extends StatefulWidget {
 class _TranscriptSidebarState extends State<TranscriptSidebar> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
-  bool _isUserScrolling = false;
+  final Map<int, GlobalKey> _cueItemKeys = {};
 
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(() {
-      if (_scrollController.position.isScrollingNotifier.value) {
-        if (!_isUserScrolling) {
-          setState(() => _isUserScrolling = true);
-          widget.captionController.setAutoScrollLocked(false);
-        }
-      }
+    widget.captionController.addListener(_onCaptionControllerChanged);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _onCaptionControllerChanged();
     });
   }
 
   @override
+  void didUpdateWidget(covariant TranscriptSidebar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.captionController != widget.captionController) {
+      oldWidget.captionController.removeListener(_onCaptionControllerChanged);
+      widget.captionController.addListener(_onCaptionControllerChanged);
+    }
+  }
+
+  @override
   void dispose() {
+    widget.captionController.removeListener(_onCaptionControllerChanged);
     _scrollController.dispose();
     _searchController.dispose();
     super.dispose();
   }
 
-  void _scrollToActiveCue(int index) {
+  void _onCaptionControllerChanged() {
     if (!widget.captionController.isAutoScrollLocked) return;
-    if (_scrollController.hasClients && index >= 0) {
-      final double targetOffset = (index * 72.0).clamp(0.0, _scrollController.position.maxScrollExtent);
-      _scrollController.animateTo(
-        targetOffset,
+
+    final currentCue = widget.captionController.currentCue;
+    if (currentCue == null) return;
+
+    final int index = widget.captionController.cues.indexWhere((cue) => cue.id == currentCue.id);
+    if (index < 0) return;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && widget.captionController.currentCue?.id == currentCue.id) {
+        _scrollToActiveCue(index, expectedCueId: currentCue.id);
+      }
+    });
+  }
+
+  bool _onUserScroll(UserScrollNotification notification) {
+    if (notification.direction != ScrollDirection.idle && widget.captionController.isAutoScrollLocked) {
+      widget.captionController.setAutoScrollLocked(false);
+    }
+    return false;
+  }
+
+  void _scrollToActiveCue(int index, {int? expectedCueId}) {
+    if (!widget.captionController.isAutoScrollLocked) return;
+    final cues = widget.captionController.cues;
+    if (!_scrollController.hasClients || index < 0 || index >= cues.length) return;
+    if (expectedCueId != null && widget.captionController.currentCue?.id != expectedCueId) return;
+
+    final BuildContext? itemContext = _cueItemKeys[index]?.currentContext;
+    if (itemContext != null) {
+      Scrollable.ensureVisible(
+        itemContext,
+        alignment: 0.35,
+        alignmentPolicy: ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
         duration: const Duration(milliseconds: 250),
         curve: Curves.easeInOut,
       );
+      return;
     }
+
+    final position = _scrollController.position;
+    final double estimatedContentExtent = position.maxScrollExtent + position.viewportDimension;
+    final double estimatedItemTop = estimatedContentExtent * index / cues.length;
+    final double targetOffset = (estimatedItemTop - position.viewportDimension * 0.35)
+        .clamp(0.0, position.maxScrollExtent)
+        .toDouble();
+    _scrollController
+        .animateTo(
+          targetOffset,
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOut,
+        )
+        .then((_) {
+          if (!mounted ||
+              !widget.captionController.isAutoScrollLocked ||
+              (expectedCueId != null &&
+                  widget.captionController.currentCue?.id != expectedCueId)) {
+            return;
+          }
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (expectedCueId != null &&
+                widget.captionController.currentCue?.id != expectedCueId) {
+              return;
+            }
+            final BuildContext? targetContext = _cueItemKeys[index]?.currentContext;
+            if (targetContext != null) {
+              Scrollable.ensureVisible(
+                targetContext,
+                alignment: 0.35,
+                alignmentPolicy: ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
+                duration: const Duration(milliseconds: 150),
+                curve: Curves.easeInOut,
+              );
+            }
+          });
+        });
   }
 
   void _showEditCueDialog(SubtitleCue cue) {
@@ -153,9 +227,13 @@ class _TranscriptSidebarState extends State<TranscriptSidebar> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Interactive Transcript',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
+                    const Expanded(
+                      child: Text(
+                        'Interactive Transcript',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
+                      ),
                     ),
                     Row(
                       children: [
@@ -381,109 +459,107 @@ class _TranscriptSidebarState extends State<TranscriptSidebar> {
                       );
                     }
 
-                    return ListView.builder(
-                      controller: _scrollController,
-                      itemCount: cues.length,
-                      itemBuilder: (context, index) {
-                        final cue = cues[index];
-                        final bool isActive = currentCue?.id == cue.id;
-                        final bool isSearchMatch = widget.captionController.searchMatchIndices.contains(index);
+                    return NotificationListener<UserScrollNotification>(
+                      onNotification: _onUserScroll,
+                      child: ListView.builder(
+                        controller: _scrollController,
+                        itemCount: cues.length,
+                        itemBuilder: (context, index) {
+                          final cue = cues[index];
+                          final bool isActive = currentCue?.id == cue.id;
+                          final bool isSearchMatch = widget.captionController.searchMatchIndices.contains(index);
 
-                        if (isActive && widget.captionController.isAutoScrollLocked) {
-                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                            _scrollToActiveCue(index);
-                          });
-                        }
-
-                        return Container(
-                          color: isActive
-                              ? const Color(0xFF6366F1).withOpacity(0.25)
-                              : isSearchMatch
-                                  ? const Color(0xFFEAB308).withOpacity(0.15)
-                                  : Colors.transparent,
-                          child: InkWell(
-                            onTap: () {
-                              // Click-to-seek
-                              widget.playerController.seek(Duration(milliseconds: cue.startMs));
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // Timestamp pill
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                    decoration: BoxDecoration(
-                                      color: isActive ? const Color(0xFF6366F1) : const Color(0xFF334155),
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Text(
-                                      cue.displayStartTime,
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
-                                        color: isActive ? Colors.white : Colors.white70,
+                          return Container(
+                            key: _cueItemKeys.putIfAbsent(index, () => GlobalKey()),
+                            color: isActive
+                                ? const Color(0xFF6366F1).withOpacity(0.25)
+                                : isSearchMatch
+                                    ? const Color(0xFFEAB308).withOpacity(0.15)
+                                    : Colors.transparent,
+                            child: InkWell(
+                              onTap: () {
+                                // Click-to-seek
+                                widget.playerController.seek(Duration(milliseconds: cue.startMs));
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Timestamp pill
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: isActive ? const Color(0xFF6366F1) : const Color(0xFF334155),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Text(
+                                        cue.displayStartTime,
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                          color: isActive ? Colors.white : Colors.white70,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  const SizedBox(width: 8),
+                                    const SizedBox(width: 8),
 
-                                  // Text & badges
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          cue.text,
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            color: isActive ? Colors.white : const Color(0xFFCBD5E1),
-                                            fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
-                                          ),
-                                        ),
-                                        if (cue.isEdited)
-                                          Padding(
-                                            padding: const EdgeInsets.only(top: 2.0),
-                                            child: Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                                              decoration: BoxDecoration(
-                                                color: const Color(0xFF0284C7).withOpacity(0.4),
-                                                borderRadius: BorderRadius.circular(2),
-                                              ),
-                                              child: const Text('Edited',
-                                                  style: TextStyle(fontSize: 10, color: Color(0xFF38BDF8))),
+                                    // Text & badges
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            cue.text,
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              color: isActive ? Colors.white : const Color(0xFFCBD5E1),
+                                              fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
                                             ),
                                           ),
+                                          if (cue.isEdited)
+                                            Padding(
+                                              padding: const EdgeInsets.only(top: 2.0),
+                                              child: Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                                decoration: BoxDecoration(
+                                                  color: const Color(0xFF0284C7).withOpacity(0.4),
+                                                  borderRadius: BorderRadius.circular(2),
+                                                ),
+                                                child: const Text('Edited',
+                                                    style: TextStyle(fontSize: 10, color: Color(0xFF38BDF8))),
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+
+                                    // Micro-actions (Loop sentence & Edit)
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        IconButton(
+                                          icon: const Icon(Icons.repeat_one, size: 16, color: Colors.white54),
+                                          tooltip: 'Loop Sentence',
+                                          onPressed: () {
+                                            widget.captionController.loopSentence(cue, widget.abRepeatController);
+                                            widget.playerController.seek(Duration(milliseconds: cue.startMs));
+                                          },
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(Icons.edit, size: 16, color: Colors.white54),
+                                          tooltip: 'Edit Text',
+                                          onPressed: () => _showEditCueDialog(cue),
+                                        ),
                                       ],
                                     ),
-                                  ),
-
-                                  // Micro-actions (Loop sentence & Edit)
-                                  Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      IconButton(
-                                        icon: const Icon(Icons.repeat_one, size: 16, color: Colors.white54),
-                                        tooltip: 'Loop Sentence',
-                                        onPressed: () {
-                                          widget.captionController.loopSentence(cue, widget.abRepeatController);
-                                          widget.playerController.seek(Duration(milliseconds: cue.startMs));
-                                        },
-                                      ),
-                                      IconButton(
-                                        icon: const Icon(Icons.edit, size: 16, color: Colors.white54),
-                                        tooltip: 'Edit Text',
-                                        onPressed: () => _showEditCueDialog(cue),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        );
-                      },
+                          );
+                        },
+                      ),
                     );
                   },
                 ),
@@ -501,7 +577,6 @@ class _TranscriptSidebarState extends State<TranscriptSidebar> {
                           label: const Text('Resume Auto-scroll'),
                           backgroundColor: const Color(0xFF6366F1),
                           onPressed: () {
-                            setState(() => _isUserScrolling = false);
                             widget.captionController.setAutoScrollLocked(true);
                           },
                         ),
