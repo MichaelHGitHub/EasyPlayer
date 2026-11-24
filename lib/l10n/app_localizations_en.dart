@@ -117,6 +117,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get modelLoading => 'Loading speech model...';
 
   @override
+  String get modelDownloading => 'Downloading speech model (about 226 MiB)';
+
+  @override
   String get scriptGenerationNotice =>
       'Generating transcript script. Please wait until generation completes.';
 

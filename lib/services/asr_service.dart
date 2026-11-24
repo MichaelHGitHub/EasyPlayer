@@ -17,6 +17,7 @@ class ASRService extends ChangeNotifier {
   ASRState _state = const ASRState(status: ASRStatus.unloaded);
   Timer? _idleTimer;
   bool _isCancelled = false;
+  int _taskGeneration = 0;
   String? _currentTaskHash;
   sherpa.OfflineRecognizer? _recognizer;
 
@@ -53,26 +54,41 @@ class ASRService extends ChangeNotifier {
   }) async {
     // 1. Cancel any active task
     cancelCurrentTask();
+    final int taskGeneration = ++_taskGeneration;
+    bool isTaskCancelled() => _isCancelled || taskGeneration != _taskGeneration;
     _idleTimer?.cancel();
     _currentTaskHash = fastHash;
     _isCancelled = false;
 
     // 2. Check cache first
     final cached = await checkCachedTranscript(fastHash);
+    if (isTaskCancelled()) return;
     if (cached != null) return;
 
-    // 3. Lazy load model if unloaded
+    // 3. Download the model on first use, then load it for inference.
     _setState(_state.copyWith(status: ASRStatus.modelLoading, progress: 0.05));
-    final bool ready = await ModelManager.ensureModelExtracted();
-    if (!ready) {
-      _setState(const ASRState(
-        status: ASRStatus.error,
-        errorMessage: 'Failed to initialize speech recognition engine.',
-      ));
+    try {
+      await ModelManager.ensureModelAvailable(
+        onProgress: (progress) {
+          if (!isTaskCancelled()) {
+            _setState(ASRState(status: ASRStatus.downloadingModel, progress: progress));
+          }
+        },
+        isCancelled: isTaskCancelled,
+      );
+    } on ModelDownloadCancelledException {
+      return;
+    } catch (e) {
+      if (!isTaskCancelled()) {
+        _setState(ASRState(
+          status: ASRStatus.error,
+          errorMessage: 'Failed to download speech model: $e',
+        ));
+      }
       return;
     }
 
-    if (_isCancelled) return;
+    if (isTaskCancelled()) return;
 
     // 4. Audio Extraction step
     _setState(_state.copyWith(status: ASRStatus.extractingAudio, progress: 0.15));
@@ -112,7 +128,15 @@ class ASRService extends ChangeNotifier {
       }
     } catch (_) {}
 
-    if (_isCancelled) return;
+    if (isTaskCancelled()) return;
+    if (audioSamples == null || audioSamples.isEmpty) {
+      _deleteTempFile(tempWavPath);
+      _setState(const ASRState(
+        status: ASRStatus.error,
+        errorMessage: 'Unable to extract audio for speech recognition.',
+      ));
+      return;
+    }
 
     // 5. Active transcription state
     _setState(_state.copyWith(status: ASRStatus.transcribing, progress: 0.25, cues: []));
@@ -120,9 +144,7 @@ class ASRService extends ChangeNotifier {
     final List<SubtitleCue> progressiveCues = [];
 
     try {
-      bool recognitionDone = false;
-
-      // Attempt AI inference with sherpa_onnx
+      // Run AI inference with sherpa_onnx.
       try {
         sherpa.initBindings();
 
@@ -140,105 +162,56 @@ class ASRService extends ChangeNotifier {
         final config = sherpa.OfflineRecognizerConfig(model: modelConfig);
         _recognizer = sherpa.OfflineRecognizer(config);
 
-        if (audioSamples != null && audioSamples.isNotEmpty) {
-          const int sampleRate = 16000;
-          const int chunkSeconds = 10;
-          const int chunkSamples = sampleRate * chunkSeconds;
-          final int totalSamples = audioSamples.length;
-          int currentSampleIndex = 0;
-          int cueId = 1;
-
-          while (currentSampleIndex < totalSamples) {
-            if (_isCancelled) {
-              _cleanupRecognizer();
-              _setState(_state.copyWith(status: ASRStatus.cancelled));
-              _deleteTempFile(tempWavPath);
-              return;
-            }
-
-            final int nextSampleIndex = (currentSampleIndex + chunkSamples).clamp(0, totalSamples);
-            final Float32List segmentSamples = audioSamples.sublist(currentSampleIndex, nextSampleIndex);
-
-            final stream = _recognizer!.createStream();
-            stream.acceptWaveform(samples: segmentSamples, sampleRate: sampleRate);
-            _recognizer!.decode(stream);
-            final result = _recognizer!.getResult(stream);
-            stream.free();
-
-            String cleanText = result.text.replaceAll(RegExp(r'<\|.*?\|>'), '').trim();
-
-            final int startMs = ((currentSampleIndex * 1000) / sampleRate).round();
-            final int endMs = ((nextSampleIndex * 1000) / sampleRate).round();
-
-            if (cleanText.isNotEmpty) {
-              final cue = SubtitleCue(
-                id: cueId++,
-                startMs: startMs,
-                endMs: endMs,
-                text: cleanText,
-              );
-              progressiveCues.add(cue);
-            }
-
-            final double progress = 0.25 + (0.75 * (nextSampleIndex / totalSamples));
-            _setState(_state.copyWith(
-              status: ASRStatus.transcribing,
-              progress: progress.clamp(0.0, 1.0),
-              cues: List.unmodifiable(progressiveCues),
-            ));
-
-            currentSampleIndex = nextSampleIndex;
-          }
-
-          recognitionDone = true;
-        }
-      } catch (e) {
-        // Native sherpa_onnx binding error or unsupported environment
-      } finally {
-        _cleanupRecognizer();
-      }
-
-      // If audio extraction / AI engine wasn't able to process audio (e.g. test environment or missing audio decoder),
-      // process with progressive fallback so app functionality is smooth and predictable
-      if (!recognitionDone) {
-        final int totalMs = duration?.inMilliseconds ?? 60000;
-        const int chunkMs = 4000;
-        int currentStart = 0;
+        const int sampleRate = 16000;
+        const int chunkSeconds = 10;
+        const int chunkSamples = sampleRate * chunkSeconds;
+        final int totalSamples = audioSamples.length;
+        int currentSampleIndex = 0;
         int cueId = 1;
 
-        while (currentStart < totalMs) {
-          if (_isCancelled) {
+        while (currentSampleIndex < totalSamples) {
+          if (isTaskCancelled()) {
+            _cleanupRecognizer();
             _setState(_state.copyWith(status: ASRStatus.cancelled));
             _deleteTempFile(tempWavPath);
             return;
           }
 
-          final int endMs = (currentStart + chunkMs).clamp(0, totalMs);
-          final double progress = 0.25 + (0.75 * (endMs / totalMs));
-          await Future.delayed(const Duration(milliseconds: 300));
+          final int nextSampleIndex = (currentSampleIndex + chunkSamples).clamp(0, totalSamples);
+          final Float32List segmentSamples = audioSamples.sublist(currentSampleIndex, nextSampleIndex);
 
-          if (_isCancelled) {
-            _setState(_state.copyWith(status: ASRStatus.cancelled));
-            _deleteTempFile(tempWavPath);
-            return;
+          final stream = _recognizer!.createStream();
+          stream.acceptWaveform(samples: segmentSamples, sampleRate: sampleRate);
+          _recognizer!.decode(stream);
+          final result = _recognizer!.getResult(stream);
+          stream.free();
+
+          String cleanText = result.text.replaceAll(RegExp(r'<\|.*?\|>'), '').trim();
+
+          final int startMs = ((currentSampleIndex * 1000) / sampleRate).round();
+          final int endMs = ((nextSampleIndex * 1000) / sampleRate).round();
+
+          if (cleanText.isNotEmpty) {
+            final cue = SubtitleCue(
+              id: cueId++,
+              startMs: startMs,
+              endMs: endMs,
+              text: cleanText,
+            );
+            progressiveCues.add(cue);
           }
 
-          final cue = SubtitleCue(
-            id: cueId++,
-            startMs: currentStart,
-            endMs: endMs,
-            text: 'Speech recognition segment $cueId at ${SubtitleCue.formatTimestamp(currentStart)}',
-          );
-
-          progressiveCues.add(cue);
+          final double progress = 0.25 + (0.75 * (nextSampleIndex / totalSamples));
           _setState(_state.copyWith(
             status: ASRStatus.transcribing,
             progress: progress.clamp(0.0, 1.0),
             cues: List.unmodifiable(progressiveCues),
           ));
 
-          currentStart = endMs;
+          currentSampleIndex = nextSampleIndex;
         }
+      } finally {
+        _cleanupRecognizer();
       }
 
       // 6. Save transcript to cache
@@ -256,7 +229,7 @@ class ASRService extends ChangeNotifier {
 
       _startIdleTimer();
     } catch (e) {
-      if (!_isCancelled) {
+      if (!isTaskCancelled()) {
         _setState(ASRState(
           status: ASRStatus.error,
           errorMessage: 'Speech inference error: $e',
@@ -286,6 +259,7 @@ class ASRService extends ChangeNotifier {
   /// Clears active task and resets state/cues to empty unloaded state
   void clearState() {
     _isCancelled = true;
+    _taskGeneration++;
     _currentTaskHash = null;
     _idleTimer?.cancel();
     _cleanupRecognizer();
@@ -295,6 +269,7 @@ class ASRService extends ChangeNotifier {
   /// Preempt / cancel active transcription
   void cancelCurrentTask() {
     _isCancelled = true;
+    _taskGeneration++;
     _currentTaskHash = null;
     _cleanupRecognizer();
     if (_state.isBusy) {

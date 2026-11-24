@@ -3,6 +3,7 @@ import 'subtitle_cue.dart';
 enum ASRStatus {
   unloaded, // Model not in memory
   modelLoading, // Lazy-loading ONNX session
+  downloadingModel, // Downloading the ONNX model
   idle, // Model loaded and resident; no transcription active
   extractingAudio, // Demuxing & resampling audio to 16kHz PCM
   transcribing, // Active ONNX inference
@@ -40,6 +41,7 @@ class ASRState {
 
   bool get isBusy =>
       status == ASRStatus.modelLoading ||
+      status == ASRStatus.downloadingModel ||
       status == ASRStatus.extractingAudio ||
       status == ASRStatus.transcribing;
 

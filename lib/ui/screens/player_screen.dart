@@ -178,7 +178,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('No transcript file found. Please use the "Start AI Transcription" button to generate script.'),
+                content: Text(
+                    'No transcript file found. Please use the "Start AI Transcription" button to generate script.'),
                 duration: Duration(seconds: 3),
               ),
             );
@@ -370,14 +371,39 @@ class _PlayerScreenState extends State<PlayerScreen> {
                             animation: ASRService.instance,
                             builder: (context, _) {
                               final asrState = ASRService.instance.state;
+                              if (asrState.status == ASRStatus.error) {
+                                return Align(
+                                  alignment: Alignment.topCenter,
+                                  child: Container(
+                                    margin: const EdgeInsets.only(top: 16.0, left: 16.0, right: 16.0),
+                                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xF03F1D24),
+                                      borderRadius: BorderRadius.circular(16.0),
+                                      border: Border.all(color: const Color(0x99EF4444)),
+                                    ),
+                                    child: Text(
+                                      asrState.errorMessage ?? 'Speech recognition failed.',
+                                      style: const TextStyle(color: Color(0xFFFCA5A5), fontSize: 12),
+                                    ),
+                                  ),
+                                );
+                              }
                               if (!asrState.isBusy) return const SizedBox.shrink();
 
                               final l10n = AppLocalizations.of(context);
-                              final String status = asrState.status == ASRStatus.modelLoading
-                                  ? (l10n?.modelLoading ?? 'Loading speech model...')
-                                  : asrState.status == ASRStatus.extractingAudio
-                                      ? 'Extracting audio...'
-                                      : '${l10n?.transcribing ?? 'Transcribing speech'}: ${(asrState.progress * 100).toInt()}%';
+                              final String status;
+                              if (asrState.status == ASRStatus.downloadingModel) {
+                                status =
+                                    '${l10n?.modelDownloading ?? 'Downloading speech model'}: ${(asrState.progress * 100).toInt()}%';
+                              } else if (asrState.status == ASRStatus.modelLoading) {
+                                status = l10n?.modelLoading ?? 'Loading speech model...';
+                              } else if (asrState.status == ASRStatus.extractingAudio) {
+                                status = 'Extracting audio...';
+                              } else {
+                                status =
+                                    '${l10n?.transcribing ?? 'Transcribing speech'}: ${(asrState.progress * 100).toInt()}%';
+                              }
 
                               final String notice = l10n?.scriptGenerationNotice ?? 'Generating transcript script. Please wait until generation completes.';
 

@@ -41,6 +41,7 @@
   "captions": "字幕",
   "transcribing": "正在离线识别语音...",
   "modelLoading": "正在加载离线语音引擎...",
+  "modelDownloading": "正在下载语音模型（约 226 MiB）",
   "scriptGenerationNotice": "正在生成字幕脚本，建议等待生成完成...",
   "transcriptReady": "字幕已就绪",
   "transcriptSidebar": "交互字幕文稿",

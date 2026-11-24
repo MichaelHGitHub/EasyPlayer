@@ -117,6 +117,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get modelLoading => '正在加载离线语音引擎...';
 
   @override
+  String get modelDownloading => '正在下载语音模型（约 226 MiB）';
+
+  @override
   String get scriptGenerationNotice => '正在生成字幕脚本，建议等待生成完成...';
 
   @override

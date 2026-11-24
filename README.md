@@ -2,7 +2,7 @@
 
 **EasyPlayer** is a modern, cross-platform media player for Windows PC (x64) and Android (ARM64), engineered and developed by **PandaSoft**.
 
-EasyPlayer seamlessly plays all popular audio and video formats, combining an intuitive folder-based queue player with an on-device, offline Automatic Speech Recognition (ASR) engine that generates synchronized subtitles and an interactive, clickable transcript without requiring cloud services or network connectivity.
+EasyPlayer seamlessly plays all popular audio and video formats, combining an intuitive folder-based queue player with an on-device Automatic Speech Recognition (ASR) engine that generates synchronized subtitles and an interactive, clickable transcript without cloud inference. The speech model downloads on the first transcription; subsequent transcription works offline.
 
 ---
 
@@ -14,7 +14,7 @@ EasyPlayer seamlessly plays all popular audio and video formats, combining an in
 *   **On-Device, Offline Speech-to-Text (ASR)**:
     *   Zero server dependencies; speech recognition runs 100% locally on-device.
     *   High-accuracy multilingual support for **English** and **Simplified Chinese (简体中文)** with code-switching support.
-    *   Quantized ~75 MB model bundled directly in the app (SenseVoice-Small INT8 / Whisper Base).
+    *   Quantized SenseVoice-Small INT8 model (~226 MiB) downloads on first use and is stored locally for offline transcription.
 *   **Instant Playback & On-Demand Transcription**:
     *   Audio and video start playing immediately without delay.
     *   Toggle Closed Captions (CC) on-demand to stream progressive subtitles in the background with immediate task cancellation on track skip.
@@ -62,7 +62,7 @@ EasyPlayer seamlessly plays all popular audio and video formats, combining an in
 
 *   **UI Framework**: Flutter (Dart) for Windows Desktop & Android.
 *   **Playback Engine**: `media_kit` + `media_kit_video` (`libmpv` / FFmpeg).
-*   **Speech Engine**: `sherpa_onnx` (SenseVoice-Small INT8 ~75MB) on background Dart Isolate with VAD.
+*   **Speech Engine**: `sherpa_onnx` (SenseVoice-Small INT8 ~226 MiB) on background Dart Isolate with VAD.
 *   **Audio Pipeline**: Native demuxer / resampler pipeline (16kHz 16-bit mono PCM).
 *   **Cache & Storage**: Local app data storage with Fast Hybrid Hashing ($<5\text{ ms}$).
 

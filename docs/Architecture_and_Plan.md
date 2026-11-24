@@ -2,7 +2,7 @@
 
 ## 1. Executive Summary & Core Decisions
 
-EasyPlayer is a cross-platform (Windows & Android) media player supporting all popular audio and video formats, featuring offline, on-device speech-to-text (ASR) that generates synchronized captions with zero server dependencies.
+EasyPlayer is a cross-platform (Windows & Android) media player supporting all popular audio and video formats, featuring on-device speech-to-text (ASR) that generates synchronized captions without cloud inference. The model downloads once on first use; subsequent transcription works offline.
 
 ### Core Decisions
 - **Project Name**: **EasyPlayer** (plays both audio and video formats).
@@ -14,7 +14,7 @@ EasyPlayer is a cross-platform (Windows & Android) media player supporting all p
   - Official PandaSoft logos and multi-resolution icons located in `artwork/`.
   - Windows: High-DPI `.ico` icons (`logo_256x256.ico`, `logo_48x48.ico`, `logo_32x32.ico`, `logo_16x16.ico`) for executable, window title bar, and taskbar.
   - Android: High-resolution PNGs (`logo_transparent.png`, `logo_no_bg.png`) and adaptive icon configurations (`logo_108x108.ico`) for launcher mipmaps and splash/about dialogs.
-- **Model Distribution**: Primary model is quantized **SenseVoice-Small INT8** (~75 MB via `sherpa_onnx`). Selected over Whisper Base INT8 for superior Mandarin accuracy and native audio-event token support. Supports English, Simplified Chinese, and mixed speech with high speed (<0.15 RTF) on mobile CPUs. Bundled directly in application assets.
+- **Model Distribution**: Primary model is quantized **SenseVoice-Small INT8** (~226 MiB via `sherpa_onnx`), downloaded from a pinned [official Sherpa-ONNX model release](https://huggingface.co/csukuangfj/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-int8-2025-09-09) on first transcription use and verified by SHA-256 before being saved locally. The matching vocabulary file remains bundled; transcription is offline after setup.
 - **Playback & Transcription UX**: **Instant Playback**. Audio/video plays immediately with no loading screen. Captions are toggled on-demand and generated progressively in a background Dart Isolate.
 - **Fast Hybrid Hashing & Instant Caching**: Replaced full-file hashing with a high-speed hybrid algorithm:
   $$\text{Hash} = \text{SHA-256}(\text{file\_size} + \text{first\_64KB} + \text{middle\_64KB} + \text{last\_64KB})$$
@@ -70,7 +70,7 @@ flowchart TD
 
     subgraph Storage ["Local Storage"]
         Cache[("Transcript & Position Cache (<fast_hash>.vtt)")]
-        ModelAsset["Bundled Model Weights (~75 MB INT8)"]
+        ModelAsset["First-use HTTPS Model Download (~226 MiB INT8)"]
     end
 
     Controls --> PC
@@ -289,11 +289,11 @@ sequenceDiagram
 - [x] Test universal format support (MP3, FLAC, AAC, MP4, MKV, WebM, 10-bit Hi10P).
 
 ### Phase 2: Speech Engine & Model Integration (Milestone 2)
-- [x] Bundle lightweight quantized SenseVoice-Small INT8 model (~75 MB) into Flutter assets (`assets/models/sensevoice_small_int8/`).
-- [x] Implement asset extraction utility: unpacks model to app data directory on first run; detects and re-extracts on partial/corrupt extraction (size/checksum validation).
+- [x] Download the quantized SenseVoice-Small INT8 model from a pinned official Sherpa-ONNX release on first transcription use; keep the matching vocabulary file bundled.
+- [x] Store the verified model in the app data directory and reuse it for later offline transcription.
 - [x] Set up background Dart Isolate with cancellation token support for task preemption.
 - [x] Configure ONNX Runtime thread pooling (`intra_op_num_threads = 2` on mobile, `4` on Windows) and low-battery guard (pause ASR below 15% battery, not on charger).
-- [x] Implement **lazy load / auto-unload lifecycle**: model is NOT loaded at app boot; lazily initializes only when CC is first toggled ON (emitting `ASRStatus.modelLoading`). After a transcription job completes or is cancelled, start a 3-minute idle timer; if no new transcription is requested, unload the ONNX session (`ASRStatus.unloaded`) and release ~75 MB back to the OS.
+- [x] Implement **lazy download/load / auto-unload lifecycle**: model is downloaded and integrity-checked on first transcription, then lazily loaded only when CC is first toggled ON (emitting `ASRStatus.modelLoading` / `ASRStatus.downloadingModel`). After a transcription job completes or is cancelled, start a 3-minute idle timer; if no new transcription is requested, unload the ONNX session (`ASRStatus.unloaded`).
 - [x] Implement 16kHz audio extraction pipeline targeting the active audio track for both audio files and video containers (MP4, MKV, WebM).
 - [x] Integrate VAD (Voice Activity Detection) to gracefully handle instrumental music and silence.
 - [x] Implement smart sentence segmentation (35–42 chars max, punctuation/pause split) and SenseVoice audio event sanitization (`[Laughter]`, `[Applause]`).
@@ -361,7 +361,7 @@ To ensure stability across formats, locales, and device specifications, implemen
 | **Media Codecs** | MP4 (H.264), MKV (HEVC & 10-bit Hi10P), WebM (VP9/AV1), MP3, FLAC, WAV, M4A, OGG | Zero dropped frames on 1080p/4K; graceful CPU fallback on unsupported GPU codecs. |
 | **Subtitle Formats** | UTF-8 `.srt`, GBK `.srt`, UTF-16 `.srt`, `.vtt`, `.ass` / `.ssa` (with stylized fonts) | No mojibake (corrupted text); `.ass` styling renders natively; delay offset adjusts in real time; override toggle forces clean EasyPlayer typography. |
 | **ASR Inference** | 30s English speech, 30s Mandarin Chinese, 30s mixed code-switching, 30s silence/music | Accurate cues generated on background isolate; VAD rejects pure silence without emitting errors. |
-| **ASR Lifecycle** | Toggle CC ON (cold start), wait 3+ minutes idle, toggle CC ON again (re-load) | `ASRStatus.modelLoading` emitted on first enable; model unloads after 3-min idle (`ASRStatus.unloaded`); cold re-start completes in ≤ 2s; memory footprint drops ~75 MB after unload. |
+| **ASR Lifecycle** | Toggle CC ON (cold start), wait 3+ minutes idle, toggle CC ON again (re-load) | First use downloads the model once; `ASRStatus.modelLoading` emitted when loading; model unloads after 3-min idle (`ASRStatus.unloaded`) while the verified model remains cached on disk. |
 | **Algorithmic Units** | `FastHybridHash` benchmarking; `SubtitleSyncEngine` binary search | Hash computation $< 5\text{ ms}$ on 10GB+ files; cue lookup $< 0.1\text{ ms}$ per video frame on 1,000+ cues. |
 | **Queue Resilience** | Playlist containing zero-byte, corrupted, and valid media files | Corrupted files trigger a non-blocking toast and auto-advance to next valid track in $\le 1\text{s}$. |
 | **Sleep Timer** | Set timer to 15 min; set to "end of track"; cancel mid-countdown | Audio fades out smoothly over 15s before expiry; playback stops; WakeLock released. "End of track" stops after current file. Cancel immediately halts countdown. |

@@ -118,7 +118,8 @@ class _TranscriptSidebarState extends State<TranscriptSidebar> {
 
     try {
       final Directory? downloadsDir = await getDownloadsDirectory();
-      final String path = '${downloadsDir?.path ?? 'C:\\temp'}/transcript_${DateTime.now().millisecondsSinceEpoch}.$format';
+      final String path =
+          '${downloadsDir?.path ?? 'C:\\temp'}/transcript_${DateTime.now().millisecondsSinceEpoch}.$format';
       final File exportFile = File(path);
       await exportFile.writeAsString(content);
 
@@ -219,7 +220,8 @@ class _TranscriptSidebarState extends State<TranscriptSidebar> {
                               icon: const Icon(Icons.arrow_upward, size: 16, color: Colors.white70),
                               onPressed: () {
                                 widget.captionController.previousSearchMatch();
-                                final matchIdx = widget.captionController.searchMatchIndices[widget.captionController.currentSearchMatchIndex];
+                                final matchIdx = widget.captionController
+                                    .searchMatchIndices[widget.captionController.currentSearchMatchIndex];
                                 _scrollToActiveCue(matchIdx);
                               },
                             ),
@@ -227,7 +229,8 @@ class _TranscriptSidebarState extends State<TranscriptSidebar> {
                               icon: const Icon(Icons.arrow_downward, size: 16, color: Colors.white70),
                               onPressed: () {
                                 widget.captionController.nextSearchMatch();
-                                final matchIdx = widget.captionController.searchMatchIndices[widget.captionController.currentSearchMatchIndex];
+                                final matchIdx = widget.captionController
+                                    .searchMatchIndices[widget.captionController.currentSearchMatchIndex];
                                 _scrollToActiveCue(matchIdx);
                               },
                             ),
@@ -245,8 +248,43 @@ class _TranscriptSidebarState extends State<TranscriptSidebar> {
             animation: ASRService.instance,
             builder: (context, _) {
               final asrState = ASRService.instance.state;
+              if (asrState.status == ASRStatus.error) {
+                return Container(
+                  margin: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.all(10.0),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF3F1D24),
+                    borderRadius: BorderRadius.circular(8.0),
+                    border: Border.all(color: const Color(0x80EF4444)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.error_outline, size: 18, color: Color(0xFFF87171)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          asrState.errorMessage ?? 'Speech recognition failed.',
+                          style: const TextStyle(fontSize: 12, color: Color(0xFFFCA5A5)),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
               if (asrState.isBusy) {
                 final l10n = AppLocalizations.of(context);
+                final String status;
+                if (asrState.status == ASRStatus.downloadingModel) {
+                  status =
+                      '${l10n?.modelDownloading ?? 'Downloading speech model'}: ${(asrState.progress * 100).toInt()}%';
+                } else if (asrState.status == ASRStatus.modelLoading) {
+                  status = l10n?.modelLoading ?? 'Loading speech model...';
+                } else if (asrState.status == ASRStatus.extractingAudio) {
+                  status = 'Extracting audio stream...';
+                } else {
+                  status =
+                      '${l10n?.transcribing ?? 'Transcribing speech'}: ${(asrState.progress * 100).toInt()}%';
+                }
                 return Container(
                   margin: const EdgeInsets.all(8.0),
                   padding: const EdgeInsets.all(10.0),
@@ -268,12 +306,9 @@ class _TranscriptSidebarState extends State<TranscriptSidebar> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              asrState.status == ASRStatus.modelLoading
-                                  ? (l10n?.modelLoading ?? 'Loading speech model...')
-                                  : asrState.status == ASRStatus.extractingAudio
-                                      ? 'Extracting audio stream...'
-                                      : '${l10n?.transcribing ?? 'Transcribing speech'}: ${(asrState.progress * 100).toInt()}%',
-                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF818CF8)),
+                              status,
+                              style:
+                                  const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF818CF8)),
                             ),
                           ),
                         ],
@@ -292,7 +327,8 @@ class _TranscriptSidebarState extends State<TranscriptSidebar> {
                           const SizedBox(width: 6),
                           Expanded(
                             child: Text(
-                              l10n?.scriptGenerationNotice ?? 'Generating transcript script. Please wait until generation completes.',
+                              l10n?.scriptGenerationNotice ??
+                                  'Generating transcript script. Please wait until generation completes.',
                               style: const TextStyle(fontSize: 11, color: Color(0xFFFBBF24), height: 1.3),
                             ),
                           ),
@@ -415,7 +451,8 @@ class _TranscriptSidebarState extends State<TranscriptSidebar> {
                                                 color: const Color(0xFF0284C7).withOpacity(0.4),
                                                 borderRadius: BorderRadius.circular(2),
                                               ),
-                                              child: const Text('Edited', style: TextStyle(fontSize: 10, color: Color(0xFF38BDF8))),
+                                              child: const Text('Edited',
+                                                  style: TextStyle(fontSize: 10, color: Color(0xFF38BDF8))),
                                             ),
                                           ),
                                       ],

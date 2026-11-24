@@ -41,6 +41,7 @@
   "captions": "Captions",
   "transcribing": "Transcribing speech...",
   "modelLoading": "Loading speech model...",
+  "modelDownloading": "Downloading speech model (about 226 MiB)",
   "scriptGenerationNotice": "Generating transcript script. Please wait until generation completes.",
   "transcriptReady": "Transcript ready",
   "transcriptSidebar": "Transcript Panel",

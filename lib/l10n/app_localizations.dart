@@ -314,6 +314,12 @@ abstract class AppLocalizations {
   /// **'Loading speech model...'**
   String get modelLoading;
 
+  /// No description provided for @modelDownloading.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading speech model (about 226 MiB)'**
+  String get modelDownloading;
+
   /// No description provided for @scriptGenerationNotice.
   ///
   /// In en, this message translates to:

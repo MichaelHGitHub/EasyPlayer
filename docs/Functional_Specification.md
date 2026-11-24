@@ -192,12 +192,12 @@ flowchart TD
   - `Manual Override`: User can lock the ASR engine to English or 简体中文 via the CC menu.
   - **Mid-Transcription Language Change**: If the user changes `asr_language_mode` while a transcription is already in progress, the running task is **cancelled and restarted** from the beginning using the new language setting. Already-emitted partial cues are discarded. A brief status indicator reads *"Restarting transcription in [Language]..."*
 - **Model Engine & Packaging**:
-  - **Primary Model**: Bundled quantized **SenseVoice-Small INT8** via `sherpa_onnx`. SenseVoice-Small is selected as the primary model because it delivers superior Mandarin Chinese accuracy and native audio-event token detection (`<|LAUGHTER|>`, etc.) which Whisper Base does not support. Whisper Base INT8 is documented as an alternative drop-in for English-only deployments where SenseVoice is unavailable, but is **not bundled by default**.
-  - **Model Size Footprint**: **~75 MB** for SenseVoice-Small INT8, keeping the total Android APK installer well under 100 MB and startup unpacking instantaneous.
+  - **Primary Model**: Quantized **SenseVoice-Small INT8** from the [official Sherpa-ONNX model release](https://huggingface.co/csukuangfj/sherpa-onnx-sense-voice-zh-en-ja-ko-yue-int8-2025-09-09). SenseVoice-Small is selected as the primary model because it delivers superior Mandarin Chinese accuracy and native audio-event token detection (`<|LAUGHTER|>`, etc.) which Whisper Base does not support. Whisper Base INT8 is documented as an alternative drop-in for English-only deployments where SenseVoice is unavailable, but is **not bundled by default**.
+  - **Model Size Footprint**: **~226 MiB** for SenseVoice-Small INT8. It downloads on first transcription use, reducing the app installer size; subsequent transcription is available offline.
   - **Performance**: High efficiency on mobile ARM64 CPUs (< 0.15 Real-Time Factor) and Windows x64.
-- **Model Bundling & Unpacking**:
-  - Model weights bundled directly in app assets (`assets/models/`).
-  - Extracted to app local support directory on first launch; zero network download required.
+- **Model Distribution & Installation**:
+  - Model weights are downloaded over HTTPS from a pinned source, verified with SHA-256, and saved in the app's local support directory.
+  - The vocabulary file remains bundled; only the first model download requires network access.
 
 ### 4.2. Fast Hybrid Media Hashing & Cache Retrieval
 - To eliminate disk I/O freezes when loading multi-gigabyte video files (e.g. 4GB–10GB 4K MKV files), EasyPlayer uses a **Fast Hybrid Hashing Algorithm**:
@@ -440,7 +440,7 @@ To guarantee instant performance and prevent device storage bloat, EasyPlayer or
 ```text
 <App_Data_Directory>/
 ├── models/
-│   └── sensevoice_small_int8/          # Extracted ONNX weights & vocab (~75 MB)
+│   └── sensevoice_small_int8/          # Downloaded ONNX weights & bundled vocab
 │       ├── model.int8.onnx
 │       └── tokens.txt
 ├── transcripts/                        # Cached generated/edited WebVTT transcripts

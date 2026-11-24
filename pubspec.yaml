@@ -56,4 +56,4 @@ flutter:
 
   assets:
     - artwork/
-    - assets/models/
+    - assets/models/tokens.txt
