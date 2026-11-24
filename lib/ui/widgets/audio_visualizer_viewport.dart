@@ -24,6 +24,7 @@ class AudioVisualizerViewport extends StatefulWidget {
 
 class _AudioVisualizerViewportState extends State<AudioVisualizerViewport> {
   bool _showFullCover = false;
+  bool _lastCaptionsEnabled = false;
   String? _coverPath;
   String? _lastMediaId;
 
@@ -104,10 +105,11 @@ class _AudioVisualizerViewportState extends State<AudioVisualizerViewport> {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: widget.playerController,
+      listenable: Listenable.merge([widget.playerController, widget.captionController]),
       builder: (context, _) {
         final MediaItem? item = widget.playerController.playlistController.currentItem;
         final bool isPlaying = widget.playerController.isPlaying;
+        final bool captionsEnabled = widget.captionController.sourceType != SubtitleSourceType.off;
 
         // Reset full cover view if media item changed
         if (item?.id != _lastMediaId) {
@@ -116,15 +118,21 @@ class _AudioVisualizerViewportState extends State<AudioVisualizerViewport> {
           _coverPath = null;
         }
 
+        if (captionsEnabled && !_lastCaptionsEnabled) {
+          _showFullCover = false;
+          _coverPath = null;
+        }
+        _lastCaptionsEnabled = captionsEnabled;
+
         return GestureDetector(
           behavior: HitTestBehavior.opaque,
-          onTap: () => _onViewportTap(item),
+          onTap: captionsEnabled ? null : () => _onViewportTap(item),
           child: Container(
-            color: const Color(0xFF0F172A),
+            color: captionsEnabled ? Colors.black : const Color(0xFF0F172A),
             child: Stack(
               fit: StackFit.expand,
               children: [
-                if (_showFullCover && _coverPath != null && File(_coverPath!).existsSync()) ...[
+                if (!captionsEnabled && _showFullCover && _coverPath != null && File(_coverPath!).existsSync()) ...[
                   // Full Cover View Screen
                   Center(
                     child: Padding(
@@ -138,7 +146,7 @@ class _AudioVisualizerViewportState extends State<AudioVisualizerViewport> {
                       ),
                     ),
                   ),
-                ] else ...[
+                ] else if (!captionsEnabled) ...[
                   // Default Playback Viewport Screen (Panda artwork + title + visualizer)
                   Center(
                     child: SingleChildScrollView(
