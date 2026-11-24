@@ -327,11 +327,19 @@ class PlaybackControls extends StatelessWidget {
                       tooltip: hasVideo ? l10n.snapshotFrameShortcut : l10n.snapshotUnavailableAudio,
                       onPressed: hasVideo
                           ? () async {
-                              final path = await playerController.captureSnapshot();
-                              if (context.mounted && path != null) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text(l10n.snapshotSavedPath(path))),
-                                );
+                              try {
+                                final path = await playerController.captureSnapshot();
+                                if (context.mounted && path != null) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text(l10n.snapshotSavedPath(path))),
+                                  );
+                                }
+                              } catch (error) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text(l10n.snapshotSaveFailed(error))),
+                                  );
+                                }
                               }
                             }
                           : () {

@@ -280,7 +280,7 @@ sequenceDiagram
   - Multi-audio track selector (switch between language dubs / audio streams).
   - Audio enhancement: Loudness normalization (`--af=loudnorm`) and vocal clarity boost filter (`lavfi=[highpass=f=80,equalizer=...]`).
   - Sleep timer with smooth 15s audio fade-out (presets: 15m, 30m, 45m, 60m, end-of-track). Persist `sleep_timer_mode` setting.
-  - Native-resolution video frame snapshot: hotkey `S`, PNG save via `path_provider` (Windows) / `MediaStore.Images.Media.insert()` (Android API 29+), `snapshot_include_subtitles` toggle.
+  - Native-resolution video frame snapshot: hotkey `S`, PNG save to the system `Pictures\Screenshots` folder (Windows) / Android MediaStore `Pictures/Screenshots/`, `snapshot_include_subtitles` toggle.
 - [x] Implement directory queue navigator with natural sorting (`1, 2, 10`) and flat/recursive scan toggle.
 - [x] Implement **lazy asynchronous metadata extraction**: file names and sizes populate instantly; ID3/Vorbis tags and album art are extracted on a background Dart isolate only as items scroll into view, targeting 60/120 FPS scroll performance on directories with hundreds of files.
 - [x] Add error resilience: Graceful auto-skip on corrupted or unreadable media files in queue.
@@ -367,7 +367,7 @@ To ensure stability across formats, locales, and device specifications, implemen
 | **Sleep Timer** | Set timer to 15 min; set to "end of track"; cancel mid-countdown | Audio fades out smoothly over 15s before expiry; playback stops; WakeLock released. "End of track" stops after current file. Cancel immediately halts countdown. |
 | **A-B Repeat** | Set A/B markers manually; use "Loop Sentence" transcript micro-action | Playback loops accurately between markers (±50ms tolerance); "Loop Sentence" sets exact cue boundaries; `R` hotkey toggles. |
 | **Recently Played & Resume** | Open 25 files; reopen one; use "Clear History" | Shelf shows most recent 20 (oldest dropped); reopening resumes from saved position; "Clear History" empties shelf and position map. |
-| **Snapshot Capture** | Capture on 4K video without subtitles; capture with `snapshot_include_subtitles=true`; capture on Android | Windows: PNG saved to `Pictures\EasyPlayer\`; Android: image visible in gallery via MediaStore; resolution matches native video resolution; subtitle text composited when setting is on. |
+| **Snapshot Capture** | Capture on 4K video without subtitles; capture with `snapshot_include_subtitles=true`; capture on Android | Windows: PNG saved to the system `Pictures\Screenshots` folder; Android: image visible in gallery under `Pictures/Screenshots/` via MediaStore; resolution matches native video resolution; subtitle text composited when setting is on. |
 | **Android PiP** | Enter PiP during playback; exit PiP; disable PiP in device settings then minimize app | PiP enters with play/pause `RemoteAction`; exiting PiP resumes full-screen player; when PiP disabled, video pauses on minimize. |
 | **Windows SMTC** | Play media; use hardware media keys; check taskbar thumbnail toolbar | SMTC overlay shows correct title/artist/art; `MediaPlayPause`, `MediaNextTrack`, `MediaPreviousTrack` keys respond correctly; taskbar mini-buttons visible on hover. |
 | **Transcript Edit & Persist** | Edit a cue text; close app; reopen same file (cached transcript) | Edited text survives app restart; `NOTE edited=true` metadata present in saved `.vtt`; "Edited" badge shown on corrected cue in transcript panel. |

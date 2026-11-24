@@ -443,7 +443,7 @@ abstract class AppLocalizations {
   /// No description provided for @snapshotSaved.
   ///
   /// In en, this message translates to:
-  /// **'Frame saved to Pictures/EasyPlayer'**
+  /// **'Frame saved to Pictures/Screenshots'**
   String get snapshotSaved;
 
   /// No description provided for @snapshotUnavailableAudio.
@@ -1015,6 +1015,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Snapshot saved: {path}'**
   String snapshotSavedPath(Object path);
+
+  /// No description provided for @snapshotSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save screenshot: {error}'**
+  String snapshotSaveFailed(Object error);
 }
 
 class _AppLocalizationsDelegate

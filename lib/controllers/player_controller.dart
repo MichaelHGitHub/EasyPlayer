@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:path/path.dart' as p;
@@ -245,32 +246,45 @@ class PlayerController extends ChangeNotifier {
   Future<String?> captureSnapshot({bool includeSubtitles = false}) async {
     if (!_hasVideo) return null;
 
-    try {
-      final Uint8List? screenshotBytes = await player.screenshot();
-      if (screenshotBytes == null) return null;
-
-      final MediaItem? item = playlistController.currentItem;
-      final String baseName = item != null ? p.basenameWithoutExtension(item.fileName) : 'easyplayer';
-      final int timestamp = DateTime.now().millisecondsSinceEpoch;
-      final String filename = '${baseName}_snapshot_$timestamp.png';
-
-      Directory saveDir;
-      if (Platform.isWindows) {
-        final Directory? picturesDir = await getDownloadsDirectory(); // or pictures directory
-        saveDir = Directory(p.join(picturesDir?.path ?? 'C:\\temp', 'EasyPlayer'));
-      } else {
-        final Directory appDir = await getApplicationDocumentsDirectory();
-        saveDir = Directory(p.join(appDir.path, 'Pictures', 'EasyPlayer'));
-      }
-
-      await saveDir.create(recursive: true);
-      final File snapshotFile = File(p.join(saveDir.path, filename));
-      await snapshotFile.writeAsBytes(screenshotBytes);
-
-      return snapshotFile.path;
-    } catch (_) {
-      return null;
+    final Uint8List? screenshotBytes = await player.screenshot();
+    if (screenshotBytes == null) {
+      throw StateError('Unable to capture the current video frame.');
     }
+
+    final MediaItem? item = playlistController.currentItem;
+    final String baseName = item != null ? p.basenameWithoutExtension(item.fileName) : 'easyplayer';
+    final int timestamp = DateTime.now().millisecondsSinceEpoch;
+    final String filename = '${baseName}_snapshot_$timestamp.png';
+
+    if (Platform.isAndroid) {
+      final String? savedPath =
+          await const MethodChannel('com.pandasoft.easyplayer/app').invokeMethod<String>('saveScreenshot', {
+        'fileName': filename,
+        'bytes': screenshotBytes,
+      });
+      if (savedPath == null) {
+        throw StateError('Android did not return the saved screenshot location.');
+      }
+      return savedPath;
+    }
+
+    late final Directory saveDir;
+    if (Platform.isWindows) {
+      final String? userProfile = Platform.environment['USERPROFILE'];
+      if (userProfile == null || userProfile.isEmpty) {
+        throw StateError('Unable to determine the system Pictures folder.');
+      }
+      saveDir = Directory(p.join(userProfile, 'Pictures', 'Screenshots'));
+    } else {
+      final Directory appDir = await getApplicationDocumentsDirectory();
+      saveDir = Directory(p.join(appDir.path, 'Pictures', 'Screenshots'));
+    }
+
+    await saveDir.create(recursive: true);
+    final File snapshotFile = File(p.join(saveDir.path, filename));
+    await snapshotFile.writeAsBytes(screenshotBytes);
+
+    return snapshotFile.path;
   }
 
   @override

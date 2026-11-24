@@ -65,7 +65,7 @@
   "sleepCustom": "Custom Duration",
 
   "snapshot": "Snapshot",
-  "snapshotSaved": "Frame saved to Pictures/EasyPlayer",
+  "snapshotSaved": "Frame saved to Pictures/Screenshots",
   "snapshotUnavailableAudio": "Snapshot unavailable for audio files",
 
   "settings": "Settings",
@@ -162,5 +162,6 @@
   "closedCaptionsShortcut": "Closed Captions (C)",
   "interactiveTranscriptPanel": "Interactive Transcript Panel",
   "snapshotFrameShortcut": "Snapshot Frame (S)",
-  "snapshotSavedPath": "Snapshot saved: {path}"
+  "snapshotSavedPath": "Snapshot saved: {path}",
+  "snapshotSaveFailed": "Failed to save screenshot: {error}"
 }

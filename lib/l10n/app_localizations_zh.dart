@@ -180,7 +180,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get snapshot => '画面截图';
 
   @override
-  String get snapshotSaved => '原画截图已保存至 Pictures/EasyPlayer';
+  String get snapshotSaved => '截图已保存至 Pictures/Screenshots';
 
   @override
   String get snapshotUnavailableAudio => '音频文件不支持截图';
@@ -493,5 +493,10 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String snapshotSavedPath(Object path) {
     return '截图已保存：$path';
+  }
+
+  @override
+  String snapshotSaveFailed(Object error) {
+    return '截图保存失败：$error';
   }
 }

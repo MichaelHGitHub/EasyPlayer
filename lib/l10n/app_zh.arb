@@ -65,7 +65,7 @@
   "sleepCustom": "自定义时长",
 
   "snapshot": "画面截图",
-  "snapshotSaved": "原画截图已保存至 Pictures/EasyPlayer",
+  "snapshotSaved": "截图已保存至 Pictures/Screenshots",
   "snapshotUnavailableAudio": "音频文件不支持截图",
 
   "settings": "设置",
@@ -162,5 +162,6 @@
   "closedCaptionsShortcut": "字幕（C）",
   "interactiveTranscriptPanel": "交互字幕文稿面板",
   "snapshotFrameShortcut": "画面截图（S）",
-  "snapshotSavedPath": "截图已保存：{path}"
+  "snapshotSavedPath": "截图已保存：{path}",
+  "snapshotSaveFailed": "截图保存失败：{error}"
 }

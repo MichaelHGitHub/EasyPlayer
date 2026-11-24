@@ -124,8 +124,8 @@ Powered by `libmpv` (FFmpeg backend via `media_kit`):
   - Accessible via the Snapshot button in video controls and Windows hotkey `S`.
   - Captures the exact frame at the media's native encoded resolution (e.g. 1920×1080 or 3840×2160) rather than downscaled screen viewport resolution.
   - **Platform Save Path**:
-    - **Windows**: Saves as a lossless PNG to `Pictures\EasyPlayer\<media_name>_snapshot_<timestamp>.png` via `path_provider` (`getPublicDirectory(PublicDirectory.pictures)`).
-    - **Android (API 29+)**: Inserts the PNG into the system media gallery via `MediaStore.Images.Media.insert()` into the `Pictures/EasyPlayer/` collection. No `WRITE_EXTERNAL_STORAGE` permission required on API 29+.
+    - **Windows**: Saves as a lossless PNG to the system `Pictures\Screenshots` folder.
+    - **Android (API 29+)**: Inserts the PNG into the system media gallery via `MediaStore.Images.Media.insert()` into the `Pictures/Screenshots/` collection. No `WRITE_EXTERNAL_STORAGE` permission required on API 29+.
   - Setting toggle: `snapshot_include_subtitles` (default: false) — when enabled, the subtitle overlay text is composited onto the captured frame before saving.
   - **Audio-Only Mode Behavior**: In audio-only mode (§2.5), there is no video frame to capture. The hotkey `S` and snapshot button are disabled while an audio-only file is active; a brief tooltip reads *"Snapshot unavailable for audio files."*
 

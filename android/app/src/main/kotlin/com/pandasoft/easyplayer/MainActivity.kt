@@ -1,6 +1,7 @@
 package com.pandasoft.easyplayer
 
 import android.app.Activity
+import android.content.ContentValues
 import android.content.ContentUris
 import android.content.Intent
 import android.database.Cursor
@@ -56,6 +57,15 @@ class MainActivity: FlutterActivity() {
                         }.start()
                     } else {
                         result.error("INVALID_ARGS", "inputPath and outputPath required", null)
+                    }
+                }
+                "saveScreenshot" -> {
+                    val fileName = call.argument<String>("fileName")
+                    val bytes = call.argument<ByteArray>("bytes")
+                    if (fileName.isNullOrBlank() || bytes == null || bytes.isEmpty()) {
+                        result.error("INVALID_ARGS", "fileName and image bytes are required", null)
+                    } else {
+                        saveScreenshot(fileName, bytes, result)
                     }
                 }
                 else -> {
@@ -160,5 +170,49 @@ class MainActivity: FlutterActivity() {
             cursor?.close()
         }
         return null
+    }
+
+    private fun saveScreenshot(fileName: String, bytes: ByteArray, result: MethodChannel.Result) {
+        Thread {
+            var imageUri: Uri? = null
+            try {
+                val values = ContentValues().apply {
+                    put(MediaStore.Images.Media.DISPLAY_NAME, fileName)
+                    put(MediaStore.Images.Media.MIME_TYPE, "image/png")
+                    put(
+                        MediaStore.Images.Media.RELATIVE_PATH,
+                        "${Environment.DIRECTORY_PICTURES}/Screenshots"
+                    )
+                    put(MediaStore.Images.Media.IS_PENDING, 1)
+                }
+
+                val uri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+                    ?: throw java.io.IOException("Unable to create a screenshot in the system media store")
+                imageUri = uri
+
+                val output = contentResolver.openOutputStream(uri, "w")
+                    ?: throw java.io.IOException("Unable to open the screenshot output stream")
+                output.use { it.write(bytes) }
+
+                val completed = ContentValues().apply {
+                    put(MediaStore.Images.Media.IS_PENDING, 0)
+                }
+                if (contentResolver.update(uri, completed, null, null) <= 0) {
+                    throw java.io.IOException("Unable to publish the screenshot to the system gallery")
+                }
+
+                val relativePath = "${Environment.DIRECTORY_PICTURES}/Screenshots/$fileName"
+                runOnUiThread { result.success(relativePath) }
+            } catch (error: Exception) {
+                try {
+                    imageUri?.let { contentResolver.delete(it, null, null) }
+                } catch (cleanupError: Exception) {
+                    error.addSuppressed(cleanupError)
+                }
+                runOnUiThread {
+                    result.error("SAVE_FAILED", "Unable to save screenshot: ${error.message}", null)
+                }
+            }
+        }.start()
     }
 }

@@ -181,7 +181,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get snapshot => 'Snapshot';
 
   @override
-  String get snapshotSaved => 'Frame saved to Pictures/EasyPlayer';
+  String get snapshotSaved => 'Frame saved to Pictures/Screenshots';
 
   @override
   String get snapshotUnavailableAudio => 'Snapshot unavailable for audio files';
@@ -504,5 +504,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String snapshotSavedPath(Object path) {
     return 'Snapshot saved: $path';
+  }
+
+  @override
+  String snapshotSaveFailed(Object error) {
+    return 'Failed to save screenshot: $error';
   }
 }

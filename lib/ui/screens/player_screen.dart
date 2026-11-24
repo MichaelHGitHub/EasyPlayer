@@ -109,6 +109,25 @@ class _PlayerScreenState extends State<PlayerScreen> {
     });
   }
 
+  Future<void> _captureSnapshot() async {
+    final l10n = AppLocalizations.of(context)!;
+
+    try {
+      final path = await _playerController.captureSnapshot();
+      if (mounted && path != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.snapshotSavedPath(path))),
+        );
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.snapshotSaveFailed(error))),
+        );
+      }
+    }
+  }
+
   void _handleKeyEvent(KeyEvent event) {
     if (event is! KeyDownEvent) return;
 
@@ -133,7 +152,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
     } else if (key == LogicalKeyboardKey.keyR) {
       _abRepeatController.toggleActive(_playerController.position.inMilliseconds);
     } else if (key == LogicalKeyboardKey.keyS) {
-      _playerController.captureSnapshot();
+      _captureSnapshot();
     } else if (key == LogicalKeyboardKey.bracketLeft) {
       final List<double> speeds = AppConstants.supportedPlaybackSpeeds;
       final int currIndex = speeds.indexWhere((s) => (s - _playerController.speed).abs() < 0.05);
