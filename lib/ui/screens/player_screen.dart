@@ -299,6 +299,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final bool showPlaylistPanel = MediaQuery.sizeOf(context).width >= 1000 && !_isFullscreen;
 
     return PopScope(
       canPop: false,
@@ -312,12 +313,14 @@ class _PlayerScreenState extends State<PlayerScreen> {
         onKeyEvent: _handleKeyEvent,
         child: Scaffold(
           backgroundColor: Colors.black,
-          drawer: PlaylistDrawer(
-            playlistController: _playlistController,
-            playerController: _playerController,
-            onOpenFile: _openFilePicker,
-            onOpenFolder: _openFolderPicker,
-          ),
+          drawer: showPlaylistPanel
+              ? null
+              : PlaylistDrawer(
+                  playlistController: _playlistController,
+                  playerController: _playerController,
+                  onOpenFile: _openFilePicker,
+                  onOpenFolder: _openFolderPicker,
+                ),
           appBar: _isFullscreen
               ? null
               : AppBar(
@@ -369,6 +372,15 @@ class _PlayerScreenState extends State<PlayerScreen> {
                 Expanded(
                   child: Row(
                     children: [
+                      if (showPlaylistPanel)
+                        PlaylistDrawer(
+                          playlistController: _playlistController,
+                          playerController: _playerController,
+                          onOpenFile: _openFilePicker,
+                          onOpenFolder: _openFolderPicker,
+                          asPanel: true,
+                        ),
+
                       // Main Viewport (Video or Audio Visualizer)
                       Expanded(
                         child: Stack(

@@ -9,6 +9,7 @@ class PlaylistDrawer extends StatelessWidget {
   final PlayerController playerController;
   final VoidCallback onOpenFile;
   final VoidCallback onOpenFolder;
+  final bool asPanel;
 
   const PlaylistDrawer({
     super.key,
@@ -16,15 +17,14 @@ class PlaylistDrawer extends StatelessWidget {
     required this.playerController,
     required this.onOpenFile,
     required this.onOpenFolder,
+    this.asPanel = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Drawer(
-      backgroundColor: const Color(0xFF1E293B),
-      child: ListenableBuilder(
+    final content = ListenableBuilder(
         listenable: playlistController,
         builder: (context, _) {
           final queue = playlistController.queue;
@@ -33,7 +33,7 @@ class PlaylistDrawer extends StatelessWidget {
             children: [
               // Header
               Container(
-                padding: const EdgeInsets.fromLTRB(16, 48, 16, 16),
+                padding: EdgeInsets.fromLTRB(16, asPanel ? 16 : 48, 16, 16),
                 color: const Color(0xFF0F172A),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -174,7 +174,9 @@ class PlaylistDrawer extends StatelessWidget {
                           onTap: () {
                             playlistController.selectIndex(index);
                             playerController.openMedia(item);
-                            Navigator.pop(context); // Close drawer
+                            if (!asPanel) {
+                              Navigator.pop(context);
+                            }
                           },
                         );
                       },
@@ -184,8 +186,22 @@ class PlaylistDrawer extends StatelessWidget {
               ),
             ],
           );
-        },
-      ),
+        });
+
+    if (asPanel) {
+      return Container(
+        width: 280,
+        decoration: const BoxDecoration(
+          color: Color(0xFF1E293B),
+          border: Border(right: BorderSide(color: Colors.white12)),
+        ),
+        child: content,
+      );
+    }
+
+    return Drawer(
+      backgroundColor: const Color(0xFF1E293B),
+      child: content,
     );
   }
 }
