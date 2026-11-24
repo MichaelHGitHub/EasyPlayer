@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import 'package:sherpa_onnx/sherpa_onnx.dart' as sherpa;
 import '../core/constants/app_constants.dart';
+import '../core/utils/sentence_case_formatter.dart';
 import '../core/utils/storage_paths.dart';
 import '../core/utils/wav_parser.dart';
 import '../models/asr_state.dart';
@@ -37,8 +38,13 @@ class ASRService extends ChangeNotifier {
       try {
         final List<SubtitleCue> cues = await SubtitleParser.parseFile(transcriptFile);
         if (cues.isNotEmpty) {
-          _setState(ASRState(status: ASRStatus.completed, cues: cues, progress: 1.0));
-          return cues;
+          final formatter = SentenceCaseFormatter();
+          final normalizedCues = cues.map((cue) {
+            final text = formatter.format(cue.text, preserveCase: cue.isEdited);
+            return text == cue.text ? cue : cue.copyWith(text: text);
+          }).toList();
+          _setState(ASRState(status: ASRStatus.completed, cues: normalizedCues, progress: 1.0));
+          return normalizedCues;
         }
       } catch (_) {}
     }
@@ -168,6 +174,7 @@ class ASRService extends ChangeNotifier {
         final int totalSamples = audioSamples.length;
         int currentSampleIndex = 0;
         int cueId = 1;
+        final sentenceCaseFormatter = SentenceCaseFormatter();
 
         while (currentSampleIndex < totalSamples) {
           if (isTaskCancelled()) {
@@ -186,7 +193,9 @@ class ASRService extends ChangeNotifier {
           final result = _recognizer!.getResult(stream);
           stream.free();
 
-          String cleanText = result.text.replaceAll(RegExp(r'<\|.*?\|>'), '').trim();
+          final cleanText = sentenceCaseFormatter.format(
+            result.text.replaceAll(RegExp(r'<\|.*?\|>'), '').trim(),
+          );
 
           final int startMs = ((currentSampleIndex * 1000) / sampleRate).round();
           final int endMs = ((nextSampleIndex * 1000) / sampleRate).round();
