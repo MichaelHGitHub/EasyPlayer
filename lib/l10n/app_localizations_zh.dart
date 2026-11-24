@@ -223,4 +223,275 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get about => '关于 EasyPlayer';
+
+  @override
+  String get selectFolder => '选择文件夹';
+
+  @override
+  String failedToOpenFile(Object error) {
+    return '打开文件失败：$error';
+  }
+
+  @override
+  String failedToOpenFolder(Object error) {
+    return '打开文件夹失败：$error';
+  }
+
+  @override
+  String get unsupportedMediaFiles => '所选文件夹中没有找到支持的媒体文件。';
+
+  @override
+  String get extractingAudio => '正在提取音频...';
+
+  @override
+  String get speechRecognitionFailed => '语音识别失败。';
+
+  @override
+  String get transcriptMissing => '未找到字幕文件。请使用“开始 AI 转录”按钮生成字幕脚本。';
+
+  @override
+  String get startAiTranscription => '开始 AI 转录';
+
+  @override
+  String get noTranscriptAvailable => '暂无字幕或转录文本';
+
+  @override
+  String get edited => '已编辑';
+
+  @override
+  String editCue(Object time) {
+    return '编辑字幕（$time）';
+  }
+
+  @override
+  String get editText => '编辑文本';
+
+  @override
+  String get cancel => '取消';
+
+  @override
+  String get save => '保存';
+
+  @override
+  String get exportAsVtt => '导出为 WebVTT（.vtt）';
+
+  @override
+  String get exportAsSrt => '导出为 SubRip（.srt）';
+
+  @override
+  String get exportAsText => '导出为纯文本（.txt）';
+
+  @override
+  String exportedTo(Object path) {
+    return '已导出至：$path';
+  }
+
+  @override
+  String exportFailed(Object error) {
+    return '导出失败：$error';
+  }
+
+  @override
+  String searchMatches(Object current, Object total) {
+    return '第 $current 项，共 $total 项匹配';
+  }
+
+  @override
+  String get settingsGeneralLocalization => '通用与语言';
+
+  @override
+  String get playbackNavigation => '播放与导航';
+
+  @override
+  String get audioEnhancements => '音频增强';
+
+  @override
+  String get subtitlesAndAsr => '字幕与语音识别（ASR）';
+
+  @override
+  String get recordPlaybackHistory => '记录播放历史';
+
+  @override
+  String get recordPlaybackHistoryDescription => '将最近打开的媒体保存到“最近播放”列表';
+
+  @override
+  String get hardwareAccelerationDescription =>
+      '使用 Direct3D / MediaCodec 硬件解码，并在需要时安全回退到 CPU 解码';
+
+  @override
+  String get fastBackwardDuration => '快退时长';
+
+  @override
+  String get fastForwardDuration => '快进时长';
+
+  @override
+  String get seconds => '秒';
+
+  @override
+  String get loudnessNormalizationDescription => '自动均衡不同曲目的音量（loudnorm）';
+
+  @override
+  String get vocalClarityBoostDescription => '使用高通滤波和人声均衡增强对白清晰度';
+
+  @override
+  String get overrideAssStylingDescription =>
+      '覆盖 ASS/SSA 粉丝字幕样式，统一使用 EasyPlayer 标准排版';
+
+  @override
+  String get showAudioEventTags => '显示音频事件标签';
+
+  @override
+  String get showAudioEventTagsDescription => '在字幕中显示 [笑声]、[掌声] 等标签';
+
+  @override
+  String get includeSubtitlesInSnapshots => '截图中包含字幕';
+
+  @override
+  String get includeSubtitlesInSnapshotsDescription => '截取视频画面时合成当前字幕';
+
+  @override
+  String get calculatingStorage => '正在计算存储空间...';
+
+  @override
+  String get cachedTranscriptsAndThumbnails => '缓存的字幕与缩略图';
+
+  @override
+  String cacheSizeUsed(Object size) {
+    return '已使用 $size MB';
+  }
+
+  @override
+  String get cacheCleared => '缓存已清除。';
+
+  @override
+  String get aboutVersion => '版本 1.0.0';
+
+  @override
+  String get aboutDescription => '跨平台音视频播放器，支持在设备上离线进行自动语音识别（ASR），无需依赖服务器。';
+
+  @override
+  String get copyright => '版权所有 © 2026 PandaSoft。保留所有权利。';
+
+  @override
+  String get ok => '确定';
+
+  @override
+  String get playlistQueue => '播放队列';
+
+  @override
+  String get sequential => '顺序播放';
+
+  @override
+  String get single => '单曲循环';
+
+  @override
+  String get shuffle => '随机播放';
+
+  @override
+  String get noRepeat => '不循环';
+
+  @override
+  String get repeatTrack => '循环当前曲目';
+
+  @override
+  String get repeatFolder => '循环当前文件夹';
+
+  @override
+  String get queueEmpty => '播放队列为空';
+
+  @override
+  String get sleepTimerActiveTrack => '定时器已启用：当前曲目结束后停止';
+
+  @override
+  String sleepTimerActiveRemaining(Object minutes, Object seconds) {
+    return '定时器已启用：剩余 $minutes 分 $seconds 秒';
+  }
+
+  @override
+  String get turnOffSleepTimer => '关闭睡眠定时器';
+
+  @override
+  String get close => '关闭';
+
+  @override
+  String get trackVideoSettings => '音轨与画面设置';
+
+  @override
+  String get audioSubtitleTracks => '音频与字幕音轨';
+
+  @override
+  String get aspectRatioMode => '画面比例模式';
+
+  @override
+  String get subtitleSource => '字幕来源';
+
+  @override
+  String get sidecarFiles => '外部字幕文件：';
+
+  @override
+  String get subtitleTimingOffset => '字幕时间偏移';
+
+  @override
+  String get milliseconds => '毫秒';
+
+  @override
+  String get subtitleVerticalPosition => '字幕垂直位置';
+
+  @override
+  String get subtitleFontSizePoints => '字幕字号';
+
+  @override
+  String get points => '点';
+
+  @override
+  String get done => '完成';
+
+  @override
+  String seekBackwardTooltip(Object seconds) {
+    return '后退 $seconds 秒';
+  }
+
+  @override
+  String seekForwardTooltip(Object seconds) {
+    return '前进 $seconds 秒';
+  }
+
+  @override
+  String get playShortcut => '播放（空格）';
+
+  @override
+  String get pauseShortcut => '暂停（空格）';
+
+  @override
+  String get abLoopActive => 'A-B 区间循环已启用（按 R 切换）';
+
+  @override
+  String get setAbRepeat => '设置 A-B 区间循环（R）';
+
+  @override
+  String pointASetAt(Object time) {
+    return '已将 A 点设为 $time';
+  }
+
+  @override
+  String pointBSetAt(Object time) {
+    return '已将 B 点设为 $time，开始循环。';
+  }
+
+  @override
+  String get abLoopCleared => '已清除 A-B 循环';
+
+  @override
+  String get closedCaptionsShortcut => '字幕（C）';
+
+  @override
+  String get interactiveTranscriptPanel => '交互字幕文稿面板';
+
+  @override
+  String get snapshotFrameShortcut => '画面截图（S）';
+
+  @override
+  String snapshotSavedPath(Object path) {
+    return '截图已保存：$path';
+  }
 }

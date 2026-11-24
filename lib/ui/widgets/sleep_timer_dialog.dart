@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 import '../../models/playback_mode.dart';
 import '../../services/sleep_timer_service.dart';
 
@@ -14,9 +15,11 @@ class SleepTimerDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return AlertDialog(
       backgroundColor: const Color(0xFF1E293B),
-      title: const Text('Sleep Timer', style: TextStyle(color: Colors.white, fontSize: 16)),
+      title: Text(l10n.sleepTimer, style: const TextStyle(color: Colors.white, fontSize: 16)),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -25,14 +28,17 @@ class SleepTimerDialog extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 16.0),
               child: Text(
                 sleepTimerService.isEndOfTrackMode
-                    ? 'Timer Active: Will stop after current track'
-                    : 'Timer Active: ${sleepTimerService.remainingSeconds ~/ 60}m ${sleepTimerService.remainingSeconds % 60}s remaining',
+                    ? l10n.sleepTimerActiveTrack
+                    : l10n.sleepTimerActiveRemaining(
+                        sleepTimerService.remainingSeconds ~/ 60,
+                        sleepTimerService.remainingSeconds % 60,
+                      ),
                 style: const TextStyle(color: Color(0xFF10B981), fontWeight: FontWeight.bold),
               ),
             ),
           ListTile(
             dense: true,
-            title: const Text('15 Minutes', style: TextStyle(color: Colors.white)),
+            title: Text(l10n.sleep15m, style: const TextStyle(color: Colors.white)),
             onTap: () {
               sleepTimerService.startTimer(SleepTimerMode.m15, currentVolume: currentVolume);
               Navigator.pop(context);
@@ -40,7 +46,7 @@ class SleepTimerDialog extends StatelessWidget {
           ),
           ListTile(
             dense: true,
-            title: const Text('30 Minutes', style: TextStyle(color: Colors.white)),
+            title: Text(l10n.sleep30m, style: const TextStyle(color: Colors.white)),
             onTap: () {
               sleepTimerService.startTimer(SleepTimerMode.m30, currentVolume: currentVolume);
               Navigator.pop(context);
@@ -48,7 +54,7 @@ class SleepTimerDialog extends StatelessWidget {
           ),
           ListTile(
             dense: true,
-            title: const Text('45 Minutes', style: TextStyle(color: Colors.white)),
+            title: Text(l10n.sleep45m, style: const TextStyle(color: Colors.white)),
             onTap: () {
               sleepTimerService.startTimer(SleepTimerMode.m45, currentVolume: currentVolume);
               Navigator.pop(context);
@@ -56,7 +62,7 @@ class SleepTimerDialog extends StatelessWidget {
           ),
           ListTile(
             dense: true,
-            title: const Text('60 Minutes', style: TextStyle(color: Colors.white)),
+            title: Text(l10n.sleep60m, style: const TextStyle(color: Colors.white)),
             onTap: () {
               sleepTimerService.startTimer(SleepTimerMode.m60, currentVolume: currentVolume);
               Navigator.pop(context);
@@ -64,7 +70,7 @@ class SleepTimerDialog extends StatelessWidget {
           ),
           ListTile(
             dense: true,
-            title: const Text('Stop after current track finishes', style: TextStyle(color: Colors.white)),
+            title: Text(l10n.sleepEndOfTrack, style: const TextStyle(color: Colors.white)),
             onTap: () {
               sleepTimerService.startTimer(SleepTimerMode.endOfTrack, currentVolume: currentVolume);
               Navigator.pop(context);
@@ -73,7 +79,7 @@ class SleepTimerDialog extends StatelessWidget {
           if (sleepTimerService.isActive)
             ListTile(
               dense: true,
-              title: const Text('Turn Off Sleep Timer', style: TextStyle(color: Colors.redAccent)),
+              title: Text(l10n.turnOffSleepTimer, style: const TextStyle(color: Colors.redAccent)),
               onTap: () {
                 sleepTimerService.cancelTimer();
                 Navigator.pop(context);
@@ -83,7 +89,7 @@ class SleepTimerDialog extends StatelessWidget {
       ),
       actions: [
         TextButton(
-          child: const Text('Close'),
+          child: Text(l10n.close),
           onPressed: () => Navigator.pop(context),
         ),
       ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart' hide RepeatMode;
 import '../../controllers/player_controller.dart';
 import '../../controllers/playlist_controller.dart';
+import '../../l10n/app_localizations.dart';
 import '../../models/playback_mode.dart';
 
 class PlaylistDrawer extends StatelessWidget {
@@ -19,6 +20,8 @@ class PlaylistDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Drawer(
       backgroundColor: const Color(0xFF1E293B),
       child: ListenableBuilder(
@@ -38,20 +41,20 @@ class PlaylistDrawer extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'Playlist Queue',
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white),
+                        Text(
+                          l10n.playlistQueue,
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white),
                         ),
                         Row(
                           children: [
                             IconButton(
                               icon: const Icon(Icons.file_open, color: Colors.white70),
-                              tooltip: 'Open File',
+                              tooltip: l10n.openFile,
                               onPressed: onOpenFile,
                             ),
                             IconButton(
                               icon: const Icon(Icons.folder_open, color: Colors.white70),
-                              tooltip: 'Open Folder',
+                              tooltip: l10n.openFolder,
                               onPressed: onOpenFolder,
                             ),
                           ],
@@ -79,10 +82,10 @@ class PlaylistDrawer extends StatelessWidget {
                           dropdownColor: const Color(0xFF0F172A),
                           style: const TextStyle(color: Colors.white, fontSize: 12),
                           underline: const SizedBox(),
-                          items: const [
-                            DropdownMenuItem(value: PlayMode.sequential, child: Text('Sequential')),
-                            DropdownMenuItem(value: PlayMode.single, child: Text('Single')),
-                            DropdownMenuItem(value: PlayMode.shuffle, child: Text('Shuffle')),
+                          items: [
+                            DropdownMenuItem(value: PlayMode.sequential, child: Text(l10n.sequential)),
+                            DropdownMenuItem(value: PlayMode.single, child: Text(l10n.single)),
+                            DropdownMenuItem(value: PlayMode.shuffle, child: Text(l10n.shuffle)),
                           ],
                           onChanged: (mode) {
                             if (mode != null) playlistController.setModes(playMode: mode);
@@ -94,10 +97,10 @@ class PlaylistDrawer extends StatelessWidget {
                           dropdownColor: const Color(0xFF0F172A),
                           style: const TextStyle(color: Colors.white, fontSize: 12),
                           underline: const SizedBox(),
-                          items: const [
-                            DropdownMenuItem(value: RepeatMode.none, child: Text('No Repeat')),
-                            DropdownMenuItem(value: RepeatMode.track, child: Text('Repeat Track')),
-                            DropdownMenuItem(value: RepeatMode.folder, child: Text('Repeat Folder')),
+                          items: [
+                            DropdownMenuItem(value: RepeatMode.none, child: Text(l10n.noRepeat)),
+                            DropdownMenuItem(value: RepeatMode.track, child: Text(l10n.repeatTrack)),
+                            DropdownMenuItem(value: RepeatMode.folder, child: Text(l10n.repeatFolder)),
                           ],
                           onChanged: (mode) {
                             if (mode != null) playlistController.setModes(repeatMode: mode);
@@ -124,11 +127,11 @@ class PlaylistDrawer extends StatelessWidget {
                           children: [
                             const Icon(Icons.queue_music, size: 48, color: Colors.white24),
                             const SizedBox(height: 12),
-                            const Text('Queue is empty', style: TextStyle(color: Colors.white54)),
+                            Text(l10n.queueEmpty, style: const TextStyle(color: Colors.white54)),
                             const SizedBox(height: 12),
                             ElevatedButton.icon(
                               icon: const Icon(Icons.folder_open),
-                              label: const Text('Open Folder'),
+                              label: Text(l10n.openFolder),
                               onPressed: onOpenFolder,
                             ),
                           ],

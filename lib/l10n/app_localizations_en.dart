@@ -224,4 +224,285 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get about => 'About EasyPlayer';
+
+  @override
+  String get selectFolder => 'Select Folder';
+
+  @override
+  String failedToOpenFile(Object error) {
+    return 'Failed to open file: $error';
+  }
+
+  @override
+  String failedToOpenFolder(Object error) {
+    return 'Failed to open folder: $error';
+  }
+
+  @override
+  String get unsupportedMediaFiles =>
+      'No supported media files found in the selected folder.';
+
+  @override
+  String get extractingAudio => 'Extracting audio...';
+
+  @override
+  String get speechRecognitionFailed => 'Speech recognition failed.';
+
+  @override
+  String get transcriptMissing =>
+      'No transcript file found. Please use the \"Start AI Transcription\" button to generate a script.';
+
+  @override
+  String get startAiTranscription => 'Start AI Transcription';
+
+  @override
+  String get noTranscriptAvailable => 'No subtitles or transcript available';
+
+  @override
+  String get edited => 'Edited';
+
+  @override
+  String editCue(Object time) {
+    return 'Edit Cue ($time)';
+  }
+
+  @override
+  String get editText => 'Edit Text';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get save => 'Save';
+
+  @override
+  String get exportAsVtt => 'Export as WebVTT (.vtt)';
+
+  @override
+  String get exportAsSrt => 'Export as SubRip (.srt)';
+
+  @override
+  String get exportAsText => 'Export as Plain Text (.txt)';
+
+  @override
+  String exportedTo(Object path) {
+    return 'Exported to: $path';
+  }
+
+  @override
+  String exportFailed(Object error) {
+    return 'Failed to export: $error';
+  }
+
+  @override
+  String searchMatches(Object current, Object total) {
+    return '$current of $total matches';
+  }
+
+  @override
+  String get settingsGeneralLocalization => 'General & Localization';
+
+  @override
+  String get playbackNavigation => 'Playback & Navigation';
+
+  @override
+  String get audioEnhancements => 'Audio Enhancements';
+
+  @override
+  String get subtitlesAndAsr => 'Subtitles & Speech Recognition (ASR)';
+
+  @override
+  String get recordPlaybackHistory => 'Record Playback History';
+
+  @override
+  String get recordPlaybackHistoryDescription =>
+      'Save recently opened media to the Recently Played shelf';
+
+  @override
+  String get hardwareAccelerationDescription =>
+      'Direct3D / MediaCodec hardware decoding with safe CPU fallback';
+
+  @override
+  String get fastBackwardDuration => 'Fast Backward Duration';
+
+  @override
+  String get fastForwardDuration => 'Fast Forward Duration';
+
+  @override
+  String get seconds => 'seconds';
+
+  @override
+  String get loudnessNormalizationDescription =>
+      'Automatically levels out audio volume across tracks (loudnorm)';
+
+  @override
+  String get vocalClarityBoostDescription =>
+      'High-pass filter and vocal EQ boost to clarify dialogue';
+
+  @override
+  String get overrideAssStylingDescription =>
+      'Forces standard EasyPlayer typography over ASS/SSA fansub styles';
+
+  @override
+  String get showAudioEventTags => 'Show Audio Event Tags';
+
+  @override
+  String get showAudioEventTagsDescription =>
+      'Display tags such as [Laughter] and [Applause] in captions';
+
+  @override
+  String get includeSubtitlesInSnapshots => 'Include Subtitles in Snapshots';
+
+  @override
+  String get includeSubtitlesInSnapshotsDescription =>
+      'Composite active subtitle text when capturing video frames';
+
+  @override
+  String get calculatingStorage => 'Calculating storage...';
+
+  @override
+  String get cachedTranscriptsAndThumbnails =>
+      'Cached Transcripts & Thumbnails';
+
+  @override
+  String cacheSizeUsed(Object size) {
+    return '$size MB used';
+  }
+
+  @override
+  String get cacheCleared => 'Cache cleared successfully.';
+
+  @override
+  String get aboutVersion => 'Version 1.0.0';
+
+  @override
+  String get aboutDescription =>
+      'Cross-platform audio and video player with on-device offline Automatic Speech Recognition (ASR). Zero server dependencies.';
+
+  @override
+  String get copyright => 'Copyright © 2026 PandaSoft. All rights reserved.';
+
+  @override
+  String get ok => 'OK';
+
+  @override
+  String get playlistQueue => 'Playlist Queue';
+
+  @override
+  String get sequential => 'Sequential';
+
+  @override
+  String get single => 'Single';
+
+  @override
+  String get shuffle => 'Shuffle';
+
+  @override
+  String get noRepeat => 'No Repeat';
+
+  @override
+  String get repeatTrack => 'Repeat Track';
+
+  @override
+  String get repeatFolder => 'Repeat Folder';
+
+  @override
+  String get queueEmpty => 'Queue is empty';
+
+  @override
+  String get sleepTimerActiveTrack =>
+      'Timer active: Will stop after current track';
+
+  @override
+  String sleepTimerActiveRemaining(Object minutes, Object seconds) {
+    return 'Timer active: ${minutes}m ${seconds}s remaining';
+  }
+
+  @override
+  String get turnOffSleepTimer => 'Turn Off Sleep Timer';
+
+  @override
+  String get close => 'Close';
+
+  @override
+  String get trackVideoSettings => 'Track & Video Settings';
+
+  @override
+  String get audioSubtitleTracks => 'Audio & Subtitle Tracks';
+
+  @override
+  String get aspectRatioMode => 'Aspect Ratio Mode';
+
+  @override
+  String get subtitleSource => 'Subtitle Source';
+
+  @override
+  String get sidecarFiles => 'Sidecar Files:';
+
+  @override
+  String get subtitleTimingOffset => 'Subtitle Timing Offset';
+
+  @override
+  String get milliseconds => 'ms';
+
+  @override
+  String get subtitleVerticalPosition => 'Subtitle Vertical Position';
+
+  @override
+  String get subtitleFontSizePoints => 'Subtitle Font Size';
+
+  @override
+  String get points => 'pt';
+
+  @override
+  String get done => 'Done';
+
+  @override
+  String seekBackwardTooltip(Object seconds) {
+    return 'Seek backward ${seconds}s';
+  }
+
+  @override
+  String seekForwardTooltip(Object seconds) {
+    return 'Seek forward ${seconds}s';
+  }
+
+  @override
+  String get playShortcut => 'Play (Space)';
+
+  @override
+  String get pauseShortcut => 'Pause (Space)';
+
+  @override
+  String get abLoopActive => 'A-B Loop Active (R to toggle)';
+
+  @override
+  String get setAbRepeat => 'Set A-B Repeat (R)';
+
+  @override
+  String pointASetAt(Object time) {
+    return 'Point A set at $time';
+  }
+
+  @override
+  String pointBSetAt(Object time) {
+    return 'Point B set at $time. Looping.';
+  }
+
+  @override
+  String get abLoopCleared => 'A-B Loop Cleared';
+
+  @override
+  String get closedCaptionsShortcut => 'Closed Captions (C)';
+
+  @override
+  String get interactiveTranscriptPanel => 'Interactive Transcript Panel';
+
+  @override
+  String get snapshotFrameShortcut => 'Snapshot Frame (S)';
+
+  @override
+  String snapshotSavedPath(Object path) {
+    return 'Snapshot saved: $path';
+  }
 }

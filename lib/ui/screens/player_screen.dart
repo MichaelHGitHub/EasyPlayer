@@ -160,6 +160,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
   }
 
   Future<void> _toggleCC() async {
+    final l10n = AppLocalizations.of(context)!;
+
     if (_captionController.sourceType != SubtitleSourceType.off) {
       _captionController.setSourceType(SubtitleSourceType.off);
     } else {
@@ -177,9 +179,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
         } else {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                    'No transcript file found. Please use the "Start AI Transcription" button to generate script.'),
+              SnackBar(
+                content: Text(l10n.transcriptMissing),
                 duration: Duration(seconds: 3),
               ),
             );
@@ -204,6 +205,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
   }
 
   Future<void> _openFilePicker() async {
+    final l10n = AppLocalizations.of(context)!;
+
     try {
       await _requestPermissions();
       String? filePath;
@@ -234,17 +237,19 @@ class _PlayerScreenState extends State<PlayerScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to open file: $e')),
+          SnackBar(content: Text(l10n.failedToOpenFile(e))),
         );
       }
     }
   }
 
   Future<void> _openFolderPicker() async {
+    final l10n = AppLocalizations.of(context)!;
+
     try {
       await _requestPermissions();
       final String? selectedDirectory = await getDirectoryPath(
-        confirmButtonText: 'Select Folder',
+        confirmButtonText: l10n.selectFolder,
       );
 
       if (selectedDirectory != null && selectedDirectory.isNotEmpty) {
@@ -258,7 +263,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
           await _playerController.openMedia(item);
         } else if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('No supported media files found in selected folder.')),
+            SnackBar(content: Text(l10n.unsupportedMediaFiles)),
           );
         }
         setState(() {});
@@ -266,7 +271,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to open folder: $e')),
+          SnackBar(content: Text(l10n.failedToOpenFolder(e))),
         );
       }
     }
@@ -274,6 +279,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (bool didPop, dynamic result) async {
@@ -281,266 +288,263 @@ class _PlayerScreenState extends State<PlayerScreen> {
         await _moveToBackground();
       },
       child: KeyboardListener(
-      focusNode: _focusNode,
-      autofocus: true,
-      onKeyEvent: _handleKeyEvent,
-      child: Scaffold(
-        backgroundColor: Colors.black,
-        drawer: PlaylistDrawer(
-          playlistController: _playlistController,
-          playerController: _playerController,
-          onOpenFile: _openFilePicker,
-          onOpenFolder: _openFolderPicker,
-        ),
-        appBar: _isFullscreen
-            ? null
-            : AppBar(
-                backgroundColor: const Color(0xFF0F172A),
-                title: Text(
-                  _playlistController.currentItem?.fileName ?? 'EasyPlayer',
-                  style: const TextStyle(fontSize: 16),
-                ),
-                actions: [
-                  IconButton(
-                    icon: const Icon(Icons.file_open),
-                    tooltip: 'Open File',
-                    onPressed: _openFilePicker,
+        focusNode: _focusNode,
+        autofocus: true,
+        onKeyEvent: _handleKeyEvent,
+        child: Scaffold(
+          backgroundColor: Colors.black,
+          drawer: PlaylistDrawer(
+            playlistController: _playlistController,
+            playerController: _playerController,
+            onOpenFile: _openFilePicker,
+            onOpenFolder: _openFolderPicker,
+          ),
+          appBar: _isFullscreen
+              ? null
+              : AppBar(
+                  backgroundColor: const Color(0xFF0F172A),
+                  title: Text(
+                    _playlistController.currentItem?.fileName ?? 'EasyPlayer',
+                    style: const TextStyle(fontSize: 16),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.folder_open),
-                    tooltip: 'Open Folder',
-                    onPressed: _openFolderPicker,
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.settings),
-                    tooltip: 'Settings',
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => SettingsScreen(
-                            playerController: _playerController,
-                            captionController: _captionController,
+                  actions: [
+                    IconButton(
+                      icon: const Icon(Icons.file_open),
+                      tooltip: l10n.openFile,
+                      onPressed: _openFilePicker,
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.folder_open),
+                      tooltip: l10n.openFolder,
+                      onPressed: _openFolderPicker,
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.settings),
+                      tooltip: l10n.settings,
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => SettingsScreen(
+                              playerController: _playerController,
+                              captionController: _captionController,
+                            ),
                           ),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-        body: SafeArea(
-          child: Column(
-            children: [
-              // Recently Played shelf when stopped or queue empty
-              if (!_isFullscreen && !_playerController.isPlaying && _playlistController.queue.isEmpty)
-                RecentlyPlayedShelf(
-                  playerController: _playerController,
-                  playlistController: _playlistController,
-                  onMediaSelected: () => setState(() {}),
+                        );
+                      },
+                    ),
+                  ],
                 ),
+          body: SafeArea(
+            child: Column(
+              children: [
+                // Recently Played shelf when stopped or queue empty
+                if (!_isFullscreen && !_playerController.isPlaying && _playlistController.queue.isEmpty)
+                  RecentlyPlayedShelf(
+                    playerController: _playerController,
+                    playlistController: _playlistController,
+                    onMediaSelected: () => setState(() {}),
+                  ),
 
-              // Viewport & Sidebar area
-              Expanded(
-                child: Row(
-                  children: [
-                    // Main Viewport (Video or Audio Visualizer)
-                    Expanded(
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          AnimatedBuilder(
-                            animation: _playerController,
-                            builder: (context, _) {
-                              if (_playerController.hasVideo) {
-                                return VideoViewport(
-                                  playerController: _playerController,
-                                  captionController: _captionController,
-                                  onToggleFullscreen: _toggleFullscreen,
-                                );
-                              } else {
-                                return AudioVisualizerViewport(
-                                  playerController: _playerController,
-                                  captionController: _captionController,
-                                );
-                              }
-                            },
-                          ),
+                // Viewport & Sidebar area
+                Expanded(
+                  child: Row(
+                    children: [
+                      // Main Viewport (Video or Audio Visualizer)
+                      Expanded(
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            AnimatedBuilder(
+                              animation: _playerController,
+                              builder: (context, _) {
+                                if (_playerController.hasVideo) {
+                                  return VideoViewport(
+                                    playerController: _playerController,
+                                    captionController: _captionController,
+                                    onToggleFullscreen: _toggleFullscreen,
+                                  );
+                                } else {
+                                  return AudioVisualizerViewport(
+                                    playerController: _playerController,
+                                    captionController: _captionController,
+                                  );
+                                }
+                              },
+                            ),
 
-                          // Script Generation In-Progress Banner
-                          AnimatedBuilder(
-                            animation: ASRService.instance,
-                            builder: (context, _) {
-                              final asrState = ASRService.instance.state;
-                              if (asrState.status == ASRStatus.error) {
+                            // Script Generation In-Progress Banner
+                            AnimatedBuilder(
+                              animation: ASRService.instance,
+                              builder: (context, _) {
+                                final asrState = ASRService.instance.state;
+                                if (asrState.status == ASRStatus.error) {
+                                  return Align(
+                                    alignment: Alignment.topCenter,
+                                    child: Container(
+                                      margin: const EdgeInsets.only(top: 16.0, left: 16.0, right: 16.0),
+                                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xF03F1D24),
+                                        borderRadius: BorderRadius.circular(16.0),
+                                        border: Border.all(color: const Color(0x99EF4444)),
+                                      ),
+                                      child: Text(
+                                        asrState.errorMessage ?? l10n.speechRecognitionFailed,
+                                        style: const TextStyle(color: Color(0xFFFCA5A5), fontSize: 12),
+                                      ),
+                                    ),
+                                  );
+                                }
+                                if (!asrState.isBusy) return const SizedBox.shrink();
+
+                                final String status;
+                                if (asrState.status == ASRStatus.downloadingModel) {
+                                  status = '${l10n.modelDownloading}: ${(asrState.progress * 100).toInt()}%';
+                                } else if (asrState.status == ASRStatus.modelLoading) {
+                                  status = l10n.modelLoading;
+                                } else if (asrState.status == ASRStatus.extractingAudio) {
+                                  status = l10n.extractingAudio;
+                                } else {
+                                  status = '${l10n.transcribing}: ${(asrState.progress * 100).toInt()}%';
+                                }
+
+                                final String notice = l10n.scriptGenerationNotice;
+
                                 return Align(
                                   alignment: Alignment.topCenter,
                                   child: Container(
                                     margin: const EdgeInsets.only(top: 16.0, left: 16.0, right: 16.0),
                                     padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xF03F1D24),
-                                      borderRadius: BorderRadius.circular(16.0),
-                                      border: Border.all(color: const Color(0x99EF4444)),
+                                      color: const Color(0xF01E1B4B),
+                                      borderRadius: BorderRadius.circular(24.0),
+                                      border: Border.all(color: const Color(0xFF6366F1).withOpacity(0.6)),
+                                      boxShadow: const [
+                                        BoxShadow(color: Colors.black45, blurRadius: 10, offset: Offset(0, 3)),
+                                      ],
                                     ),
-                                    child: Text(
-                                      asrState.errorMessage ?? 'Speech recognition failed.',
-                                      style: const TextStyle(color: Color(0xFFFCA5A5), fontSize: 12),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const SizedBox(
+                                          width: 14,
+                                          height: 14,
+                                          child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF818CF8)),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Flexible(
+                                          child: Text(
+                                            '$status — $notice',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 );
-                              }
-                              if (!asrState.isBusy) return const SizedBox.shrink();
-
-                              final l10n = AppLocalizations.of(context);
-                              final String status;
-                              if (asrState.status == ASRStatus.downloadingModel) {
-                                status =
-                                    '${l10n?.modelDownloading ?? 'Downloading speech model'}: ${(asrState.progress * 100).toInt()}%';
-                              } else if (asrState.status == ASRStatus.modelLoading) {
-                                status = l10n?.modelLoading ?? 'Loading speech model...';
-                              } else if (asrState.status == ASRStatus.extractingAudio) {
-                                status = 'Extracting audio...';
-                              } else {
-                                status =
-                                    '${l10n?.transcribing ?? 'Transcribing speech'}: ${(asrState.progress * 100).toInt()}%';
-                              }
-
-                              final String notice = l10n?.scriptGenerationNotice ?? 'Generating transcript script. Please wait until generation completes.';
-
-                              return Align(
-                                alignment: Alignment.topCenter,
-                                child: Container(
-                                  margin: const EdgeInsets.only(top: 16.0, left: 16.0, right: 16.0),
-                                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xF01E1B4B),
-                                    borderRadius: BorderRadius.circular(24.0),
-                                    border: Border.all(color: const Color(0xFF6366F1).withOpacity(0.6)),
-                                    boxShadow: const [
-                                      BoxShadow(color: Colors.black45, blurRadius: 10, offset: Offset(0, 3)),
-                                    ],
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const SizedBox(
-                                        width: 14,
-                                        height: 14,
-                                        child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF818CF8)),
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Flexible(
-                                        child: Text(
-                                          '$status — $notice',
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-
-                          // Floating Controls overlay in fullscreen
-                          if (_isFullscreen)
-                            Align(
-                              alignment: Alignment.bottomCenter,
-                              child: AnimatedBuilder(
-                                animation: _playerController,
-                                builder: (context, _) {
-                                  return PlaybackControls(
-                                    playerController: _playerController,
-                                    captionController: _captionController,
-                                    abRepeatController: _abRepeatController,
-                                    playlistController: _playlistController,
-                                    onToggleFullscreen: _toggleFullscreen,
-                                    onToggleTranscriptSidebar: () {
-                                      setState(() => _isSidebarOpen = !_isSidebarOpen);
-                                    },
-                                    onOpenTrackMenu: () {
-                                      showDialog(
-                                        context: context,
-                                        builder: (_) => TrackSettingsDialog(
-                                          playerController: _playerController,
-                                          captionController: _captionController,
-                                        ),
-                                      );
-                                    },
-                                    onOpenSleepTimer: () {
-                                      showDialog(
-                                        context: context,
-                                        builder: (_) => SleepTimerDialog(
-                                          sleepTimerService: _sleepTimerService,
-                                          currentVolume: _playerController.volume,
-                                        ),
-                                      );
-                                    },
-                                  );
-                                },
-                              ),
+                              },
                             ),
-                        ],
-                      ),
-                    ),
 
-                    // Interactive Transcript Sidebar
-                    if (_isSidebarOpen)
-                      TranscriptSidebar(
-                        captionController: _captionController,
+                            // Floating Controls overlay in fullscreen
+                            if (_isFullscreen)
+                              Align(
+                                alignment: Alignment.bottomCenter,
+                                child: AnimatedBuilder(
+                                  animation: _playerController,
+                                  builder: (context, _) {
+                                    return PlaybackControls(
+                                      playerController: _playerController,
+                                      captionController: _captionController,
+                                      abRepeatController: _abRepeatController,
+                                      playlistController: _playlistController,
+                                      onToggleFullscreen: _toggleFullscreen,
+                                      onToggleTranscriptSidebar: () {
+                                        setState(() => _isSidebarOpen = !_isSidebarOpen);
+                                      },
+                                      onOpenTrackMenu: () {
+                                        showDialog(
+                                          context: context,
+                                          builder: (_) => TrackSettingsDialog(
+                                            playerController: _playerController,
+                                            captionController: _captionController,
+                                          ),
+                                        );
+                                      },
+                                      onOpenSleepTimer: () {
+                                        showDialog(
+                                          context: context,
+                                          builder: (_) => SleepTimerDialog(
+                                            sleepTimerService: _sleepTimerService,
+                                            currentVolume: _playerController.volume,
+                                          ),
+                                        );
+                                      },
+                                    );
+                                  },
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+
+                      // Interactive Transcript Sidebar
+                      if (_isSidebarOpen)
+                        TranscriptSidebar(
+                          captionController: _captionController,
+                          playerController: _playerController,
+                          abRepeatController: _abRepeatController,
+                          onClose: () => setState(() => _isSidebarOpen = false),
+                        ),
+                    ],
+                  ),
+                ),
+
+                // Standard Bottom Playback Controls (when not in fullscreen)
+                if (!_isFullscreen)
+                  AnimatedBuilder(
+                    animation: _playerController,
+                    builder: (context, _) {
+                      return PlaybackControls(
                         playerController: _playerController,
+                        captionController: _captionController,
                         abRepeatController: _abRepeatController,
-                        onClose: () => setState(() => _isSidebarOpen = false),
-                      ),
-                  ],
-                ),
-              ),
-
-              // Standard Bottom Playback Controls (when not in fullscreen)
-              if (!_isFullscreen)
-                AnimatedBuilder(
-                  animation: _playerController,
-                  builder: (context, _) {
-                    return PlaybackControls(
-                      playerController: _playerController,
-                      captionController: _captionController,
-                      abRepeatController: _abRepeatController,
-                      playlistController: _playlistController,
-                      onToggleFullscreen: _toggleFullscreen,
-                      onToggleTranscriptSidebar: () {
-                        setState(() => _isSidebarOpen = !_isSidebarOpen);
-                      },
-                      onOpenTrackMenu: () {
-                        showDialog(
-                          context: context,
-                          builder: (_) => TrackSettingsDialog(
-                            playerController: _playerController,
-                            captionController: _captionController,
-                          ),
-                        );
-                      },
-                      onOpenSleepTimer: () {
-                        showDialog(
-                          context: context,
-                          builder: (_) => SleepTimerDialog(
-                            sleepTimerService: _sleepTimerService,
-                            currentVolume: _playerController.volume,
-                          ),
-                        );
-                      },
-                    );
-                  },
-                ),
-            ],
+                        playlistController: _playlistController,
+                        onToggleFullscreen: _toggleFullscreen,
+                        onToggleTranscriptSidebar: () {
+                          setState(() => _isSidebarOpen = !_isSidebarOpen);
+                        },
+                        onOpenTrackMenu: () {
+                          showDialog(
+                            context: context,
+                            builder: (_) => TrackSettingsDialog(
+                              playerController: _playerController,
+                              captionController: _captionController,
+                            ),
+                          );
+                        },
+                        onOpenSleepTimer: () {
+                          showDialog(
+                            context: context,
+                            builder: (_) => SleepTimerDialog(
+                              sleepTimerService: _sleepTimerService,
+                              currentVolume: _playerController.volume,
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+              ],
+            ),
           ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 }

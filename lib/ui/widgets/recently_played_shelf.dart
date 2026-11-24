@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../controllers/player_controller.dart';
 import '../../controllers/playlist_controller.dart';
+import '../../l10n/app_localizations.dart';
 import '../../models/media_item.dart';
 import '../../services/database_service.dart';
 
@@ -49,6 +50,8 @@ class _RecentlyPlayedShelfState extends State<RecentlyPlayedShelf> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     if (_isLoading) {
       return const SizedBox(height: 120, child: Center(child: CircularProgressIndicator()));
     }
@@ -68,13 +71,13 @@ class _RecentlyPlayedShelfState extends State<RecentlyPlayedShelf> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Recently Played',
+                Text(
+                  l10n.recentlyPlayed,
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white),
                 ),
                 TextButton(
                   onPressed: _clearHistory,
-                  child: const Text('Clear History', style: TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
+                  child: Text(l10n.clearHistory, style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
                 ),
               ],
             ),
@@ -87,9 +90,10 @@ class _RecentlyPlayedShelfState extends State<RecentlyPlayedShelf> {
               itemCount: _recentItems.length,
               itemBuilder: (context, index) {
                 final item = _recentItems[index];
-                final double progress = (item.duration != null && item.duration!.inMilliseconds > 0 && item.resumePositionMs != null)
-                    ? (item.resumePositionMs! / item.duration!.inMilliseconds).clamp(0.0, 1.0)
-                    : 0.0;
+                final double progress =
+                    (item.duration != null && item.duration!.inMilliseconds > 0 && item.resumePositionMs != null)
+                        ? (item.resumePositionMs! / item.duration!.inMilliseconds).clamp(0.0, 1.0)
+                        : 0.0;
 
                 return InkWell(
                   onTap: () {

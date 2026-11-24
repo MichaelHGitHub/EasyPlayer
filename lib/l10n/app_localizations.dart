@@ -529,6 +529,492 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'About EasyPlayer'**
   String get about;
+
+  /// No description provided for @selectFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Folder'**
+  String get selectFolder;
+
+  /// No description provided for @failedToOpenFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to open file: {error}'**
+  String failedToOpenFile(Object error);
+
+  /// No description provided for @failedToOpenFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to open folder: {error}'**
+  String failedToOpenFolder(Object error);
+
+  /// No description provided for @unsupportedMediaFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'No supported media files found in the selected folder.'**
+  String get unsupportedMediaFiles;
+
+  /// No description provided for @extractingAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Extracting audio...'**
+  String get extractingAudio;
+
+  /// No description provided for @speechRecognitionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Speech recognition failed.'**
+  String get speechRecognitionFailed;
+
+  /// No description provided for @transcriptMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'No transcript file found. Please use the \"Start AI Transcription\" button to generate a script.'**
+  String get transcriptMissing;
+
+  /// No description provided for @startAiTranscription.
+  ///
+  /// In en, this message translates to:
+  /// **'Start AI Transcription'**
+  String get startAiTranscription;
+
+  /// No description provided for @noTranscriptAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No subtitles or transcript available'**
+  String get noTranscriptAvailable;
+
+  /// No description provided for @edited.
+  ///
+  /// In en, this message translates to:
+  /// **'Edited'**
+  String get edited;
+
+  /// No description provided for @editCue.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Cue ({time})'**
+  String editCue(Object time);
+
+  /// No description provided for @editText.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Text'**
+  String get editText;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @save.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
+
+  /// No description provided for @exportAsVtt.
+  ///
+  /// In en, this message translates to:
+  /// **'Export as WebVTT (.vtt)'**
+  String get exportAsVtt;
+
+  /// No description provided for @exportAsSrt.
+  ///
+  /// In en, this message translates to:
+  /// **'Export as SubRip (.srt)'**
+  String get exportAsSrt;
+
+  /// No description provided for @exportAsText.
+  ///
+  /// In en, this message translates to:
+  /// **'Export as Plain Text (.txt)'**
+  String get exportAsText;
+
+  /// No description provided for @exportedTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Exported to: {path}'**
+  String exportedTo(Object path);
+
+  /// No description provided for @exportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to export: {error}'**
+  String exportFailed(Object error);
+
+  /// No description provided for @searchMatches.
+  ///
+  /// In en, this message translates to:
+  /// **'{current} of {total} matches'**
+  String searchMatches(Object current, Object total);
+
+  /// No description provided for @settingsGeneralLocalization.
+  ///
+  /// In en, this message translates to:
+  /// **'General & Localization'**
+  String get settingsGeneralLocalization;
+
+  /// No description provided for @playbackNavigation.
+  ///
+  /// In en, this message translates to:
+  /// **'Playback & Navigation'**
+  String get playbackNavigation;
+
+  /// No description provided for @audioEnhancements.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio Enhancements'**
+  String get audioEnhancements;
+
+  /// No description provided for @subtitlesAndAsr.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtitles & Speech Recognition (ASR)'**
+  String get subtitlesAndAsr;
+
+  /// No description provided for @recordPlaybackHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Record Playback History'**
+  String get recordPlaybackHistory;
+
+  /// No description provided for @recordPlaybackHistoryDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Save recently opened media to the Recently Played shelf'**
+  String get recordPlaybackHistoryDescription;
+
+  /// No description provided for @hardwareAccelerationDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Direct3D / MediaCodec hardware decoding with safe CPU fallback'**
+  String get hardwareAccelerationDescription;
+
+  /// No description provided for @fastBackwardDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Fast Backward Duration'**
+  String get fastBackwardDuration;
+
+  /// No description provided for @fastForwardDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Fast Forward Duration'**
+  String get fastForwardDuration;
+
+  /// No description provided for @seconds.
+  ///
+  /// In en, this message translates to:
+  /// **'seconds'**
+  String get seconds;
+
+  /// No description provided for @loudnessNormalizationDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatically levels out audio volume across tracks (loudnorm)'**
+  String get loudnessNormalizationDescription;
+
+  /// No description provided for @vocalClarityBoostDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'High-pass filter and vocal EQ boost to clarify dialogue'**
+  String get vocalClarityBoostDescription;
+
+  /// No description provided for @overrideAssStylingDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Forces standard EasyPlayer typography over ASS/SSA fansub styles'**
+  String get overrideAssStylingDescription;
+
+  /// No description provided for @showAudioEventTags.
+  ///
+  /// In en, this message translates to:
+  /// **'Show Audio Event Tags'**
+  String get showAudioEventTags;
+
+  /// No description provided for @showAudioEventTagsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Display tags such as [Laughter] and [Applause] in captions'**
+  String get showAudioEventTagsDescription;
+
+  /// No description provided for @includeSubtitlesInSnapshots.
+  ///
+  /// In en, this message translates to:
+  /// **'Include Subtitles in Snapshots'**
+  String get includeSubtitlesInSnapshots;
+
+  /// No description provided for @includeSubtitlesInSnapshotsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Composite active subtitle text when capturing video frames'**
+  String get includeSubtitlesInSnapshotsDescription;
+
+  /// No description provided for @calculatingStorage.
+  ///
+  /// In en, this message translates to:
+  /// **'Calculating storage...'**
+  String get calculatingStorage;
+
+  /// No description provided for @cachedTranscriptsAndThumbnails.
+  ///
+  /// In en, this message translates to:
+  /// **'Cached Transcripts & Thumbnails'**
+  String get cachedTranscriptsAndThumbnails;
+
+  /// No description provided for @cacheSizeUsed.
+  ///
+  /// In en, this message translates to:
+  /// **'{size} MB used'**
+  String cacheSizeUsed(Object size);
+
+  /// No description provided for @cacheCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Cache cleared successfully.'**
+  String get cacheCleared;
+
+  /// No description provided for @aboutVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Version 1.0.0'**
+  String get aboutVersion;
+
+  /// No description provided for @aboutDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Cross-platform audio and video player with on-device offline Automatic Speech Recognition (ASR). Zero server dependencies.'**
+  String get aboutDescription;
+
+  /// No description provided for @copyright.
+  ///
+  /// In en, this message translates to:
+  /// **'Copyright © 2026 PandaSoft. All rights reserved.'**
+  String get copyright;
+
+  /// No description provided for @ok.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get ok;
+
+  /// No description provided for @playlistQueue.
+  ///
+  /// In en, this message translates to:
+  /// **'Playlist Queue'**
+  String get playlistQueue;
+
+  /// No description provided for @sequential.
+  ///
+  /// In en, this message translates to:
+  /// **'Sequential'**
+  String get sequential;
+
+  /// No description provided for @single.
+  ///
+  /// In en, this message translates to:
+  /// **'Single'**
+  String get single;
+
+  /// No description provided for @shuffle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shuffle'**
+  String get shuffle;
+
+  /// No description provided for @noRepeat.
+  ///
+  /// In en, this message translates to:
+  /// **'No Repeat'**
+  String get noRepeat;
+
+  /// No description provided for @repeatTrack.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeat Track'**
+  String get repeatTrack;
+
+  /// No description provided for @repeatFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeat Folder'**
+  String get repeatFolder;
+
+  /// No description provided for @queueEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Queue is empty'**
+  String get queueEmpty;
+
+  /// No description provided for @sleepTimerActiveTrack.
+  ///
+  /// In en, this message translates to:
+  /// **'Timer active: Will stop after current track'**
+  String get sleepTimerActiveTrack;
+
+  /// No description provided for @sleepTimerActiveRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'Timer active: {minutes}m {seconds}s remaining'**
+  String sleepTimerActiveRemaining(Object minutes, Object seconds);
+
+  /// No description provided for @turnOffSleepTimer.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn Off Sleep Timer'**
+  String get turnOffSleepTimer;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
+
+  /// No description provided for @trackVideoSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Track & Video Settings'**
+  String get trackVideoSettings;
+
+  /// No description provided for @audioSubtitleTracks.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio & Subtitle Tracks'**
+  String get audioSubtitleTracks;
+
+  /// No description provided for @aspectRatioMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Aspect Ratio Mode'**
+  String get aspectRatioMode;
+
+  /// No description provided for @subtitleSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtitle Source'**
+  String get subtitleSource;
+
+  /// No description provided for @sidecarFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Sidecar Files:'**
+  String get sidecarFiles;
+
+  /// No description provided for @subtitleTimingOffset.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtitle Timing Offset'**
+  String get subtitleTimingOffset;
+
+  /// No description provided for @milliseconds.
+  ///
+  /// In en, this message translates to:
+  /// **'ms'**
+  String get milliseconds;
+
+  /// No description provided for @subtitleVerticalPosition.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtitle Vertical Position'**
+  String get subtitleVerticalPosition;
+
+  /// No description provided for @subtitleFontSizePoints.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtitle Font Size'**
+  String get subtitleFontSizePoints;
+
+  /// No description provided for @points.
+  ///
+  /// In en, this message translates to:
+  /// **'pt'**
+  String get points;
+
+  /// No description provided for @done.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get done;
+
+  /// No description provided for @seekBackwardTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Seek backward {seconds}s'**
+  String seekBackwardTooltip(Object seconds);
+
+  /// No description provided for @seekForwardTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Seek forward {seconds}s'**
+  String seekForwardTooltip(Object seconds);
+
+  /// No description provided for @playShortcut.
+  ///
+  /// In en, this message translates to:
+  /// **'Play (Space)'**
+  String get playShortcut;
+
+  /// No description provided for @pauseShortcut.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause (Space)'**
+  String get pauseShortcut;
+
+  /// No description provided for @abLoopActive.
+  ///
+  /// In en, this message translates to:
+  /// **'A-B Loop Active (R to toggle)'**
+  String get abLoopActive;
+
+  /// No description provided for @setAbRepeat.
+  ///
+  /// In en, this message translates to:
+  /// **'Set A-B Repeat (R)'**
+  String get setAbRepeat;
+
+  /// No description provided for @pointASetAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Point A set at {time}'**
+  String pointASetAt(Object time);
+
+  /// No description provided for @pointBSetAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Point B set at {time}. Looping.'**
+  String pointBSetAt(Object time);
+
+  /// No description provided for @abLoopCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'A-B Loop Cleared'**
+  String get abLoopCleared;
+
+  /// No description provided for @closedCaptionsShortcut.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed Captions (C)'**
+  String get closedCaptionsShortcut;
+
+  /// No description provided for @interactiveTranscriptPanel.
+  ///
+  /// In en, this message translates to:
+  /// **'Interactive Transcript Panel'**
+  String get interactiveTranscriptPanel;
+
+  /// No description provided for @snapshotFrameShortcut.
+  ///
+  /// In en, this message translates to:
+  /// **'Snapshot Frame (S)'**
+  String get snapshotFrameShortcut;
+
+  /// No description provided for @snapshotSavedPath.
+  ///
+  /// In en, this message translates to:
+  /// **'Snapshot saved: {path}'**
+  String snapshotSavedPath(Object path);
 }
 
 class _AppLocalizationsDelegate

@@ -5,6 +5,7 @@ import '../../controllers/caption_controller.dart';
 import '../../controllers/player_controller.dart';
 import '../../controllers/playlist_controller.dart';
 import '../../core/constants/app_constants.dart';
+import '../../l10n/app_localizations.dart';
 import '../../models/subtitle_cue.dart';
 import '../../services/asr_service.dart';
 import '../../services/settings_service.dart';
@@ -84,6 +85,7 @@ class PlaybackControls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final Duration position = playerController.position;
     final Duration duration = playerController.duration;
     final bool isPlaying = playerController.isPlaying;
@@ -137,237 +139,237 @@ class PlaybackControls extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-              // Left: Play/Pause, Skip, Jump
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Previous
-                  IconButton(
-                    icon: const Icon(Icons.skip_previous, color: Colors.white),
-                    tooltip: 'Previous Track',
-                    onPressed: playlistController.hasPrevious
-                        ? () {
-                            final prev = playlistController.getPreviousTrack();
-                            if (prev != null) playerController.openMedia(prev);
-                          }
-                        : null,
-                  ),
-                  // Jump Backward
-                  ListenableBuilder(
-                    listenable: SettingsService.instance,
-                    builder: (context, _) {
-                      final int skipBack = SettingsService.instance.settings.skipBackwardSeconds;
-                      return _buildSeekButton(
-                        isForward: false,
-                        seconds: skipBack,
-                        tooltip: 'Seek -${skipBack}s',
-                        onPressed: () => playerController.seekBackward(skipBack),
-                      );
-                    },
-                  ),
-                  // Play / Pause
-                  IconButton(
-                    iconSize: 36,
-                    icon: Icon(
-                      isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
-                      color: const Color(0xFF818CF8),
+                // Left: Play/Pause, Skip, Jump
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Previous
+                    IconButton(
+                      icon: const Icon(Icons.skip_previous, color: Colors.white),
+                      tooltip: l10n.previousTrack,
+                      onPressed: playlistController.hasPrevious
+                          ? () {
+                              final prev = playlistController.getPreviousTrack();
+                              if (prev != null) playerController.openMedia(prev);
+                            }
+                          : null,
                     ),
-                    tooltip: isPlaying ? 'Pause (Space)' : 'Play (Space)',
-                    onPressed: () => playerController.playOrPause(),
-                  ),
-                  // Jump Forward
-                  ListenableBuilder(
-                    listenable: SettingsService.instance,
-                    builder: (context, _) {
-                      final int skipFwd = SettingsService.instance.settings.skipForwardSeconds;
-                      return _buildSeekButton(
-                        isForward: true,
-                        seconds: skipFwd,
-                        tooltip: 'Seek +${skipFwd}s',
-                        onPressed: () => playerController.seekForward(skipFwd),
-                      );
-                    },
-                  ),
-                  // Next
-                  IconButton(
-                    icon: const Icon(Icons.skip_next, color: Colors.white),
-                    tooltip: 'Next Track',
-                    onPressed: playlistController.hasNext
-                        ? () {
-                            final next = playlistController.getNextTrack();
-                            if (next != null) playerController.openMedia(next);
-                          }
-                        : null,
-                  ),
-                  // Expandable Vertical Volume Control
-                  VerticalVolumeControl(playerController: playerController),
-                ],
-              ),
+                    // Jump Backward
+                    ListenableBuilder(
+                      listenable: SettingsService.instance,
+                      builder: (context, _) {
+                        final int skipBack = SettingsService.instance.settings.skipBackwardSeconds;
+                        return _buildSeekButton(
+                          isForward: false,
+                          seconds: skipBack,
+                          tooltip: l10n.seekBackwardTooltip(skipBack),
+                          onPressed: () => playerController.seekBackward(skipBack),
+                        );
+                      },
+                    ),
+                    // Play / Pause
+                    IconButton(
+                      iconSize: 36,
+                      icon: Icon(
+                        isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
+                        color: const Color(0xFF818CF8),
+                      ),
+                      tooltip: isPlaying ? l10n.pauseShortcut : l10n.playShortcut,
+                      onPressed: () => playerController.playOrPause(),
+                    ),
+                    // Jump Forward
+                    ListenableBuilder(
+                      listenable: SettingsService.instance,
+                      builder: (context, _) {
+                        final int skipFwd = SettingsService.instance.settings.skipForwardSeconds;
+                        return _buildSeekButton(
+                          isForward: true,
+                          seconds: skipFwd,
+                          tooltip: l10n.seekForwardTooltip(skipFwd),
+                          onPressed: () => playerController.seekForward(skipFwd),
+                        );
+                      },
+                    ),
+                    // Next
+                    IconButton(
+                      icon: const Icon(Icons.skip_next, color: Colors.white),
+                      tooltip: l10n.nextTrack,
+                      onPressed: playlistController.hasNext
+                          ? () {
+                              final next = playlistController.getNextTrack();
+                              if (next != null) playerController.openMedia(next);
+                            }
+                          : null,
+                    ),
+                    // Expandable Vertical Volume Control
+                    VerticalVolumeControl(playerController: playerController),
+                  ],
+                ),
 
-              // Right: Tools (Speed, CC, Sidebar, A-B, Snapshot, Sleep, Fullscreen)
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Playback Speed Popup
-                  PopupMenuButton<double>(
-                    tooltip: 'Playback Speed',
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Text(
-                        '${playerController.speed.toStringAsFixed(1)}x',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
+                // Right: Tools (Speed, CC, Sidebar, A-B, Snapshot, Sleep, Fullscreen)
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Playback Speed Popup
+                    PopupMenuButton<double>(
+                      tooltip: l10n.playbackSpeed,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Text(
+                          '${playerController.speed.toStringAsFixed(1)}x',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
                         ),
                       ),
-                    ),
-                    itemBuilder: (context) {
-                      return AppConstants.supportedPlaybackSpeeds.map((rate) {
-                        final String label = '${rate.toStringAsFixed(1)}x';
-                        final bool isSelected = (playerController.speed - rate).abs() < 0.05;
-                        return PopupMenuItem<double>(
-                          value: rate,
-                          child: Text(
-                            label,
-                            style: TextStyle(
-                              color: isSelected ? const Color(0xFF818CF8) : Colors.white,
-                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      itemBuilder: (context) {
+                        return AppConstants.supportedPlaybackSpeeds.map((rate) {
+                          final String label = '${rate.toStringAsFixed(1)}x';
+                          final bool isSelected = (playerController.speed - rate).abs() < 0.05;
+                          return PopupMenuItem<double>(
+                            value: rate,
+                            child: Text(
+                              label,
+                              style: TextStyle(
+                                color: isSelected ? const Color(0xFF818CF8) : Colors.white,
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                              ),
                             ),
-                          ),
-                        );
-                      }).toList();
-                    },
-                    onSelected: (rate) => playerController.setSpeed(rate),
-                  ),
-
-                  // A-B Repeat Button
-                  IconButton(
-                    icon: Icon(
-                      Icons.repeat,
-                      color: abRepeatController.isActive
-                          ? const Color(0xFF10B981)
-                          : Colors.white70,
+                          );
+                        }).toList();
+                      },
+                      onSelected: (rate) => playerController.setSpeed(rate),
                     ),
-                    tooltip: abRepeatController.isActive
-                        ? 'A-B Loop Active (R to toggle)'
-                        : 'Set A-B Repeat (R)',
-                    onPressed: () {
-                      final pos = playerController.position.inMilliseconds;
-                      if (!abRepeatController.hasMarkerA) {
-                        abRepeatController.setMarkerA(pos);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Point A set at ${SubtitleCue.formatTimestamp(pos)}'), duration: const Duration(seconds: 1)),
-                        );
-                      } else if (!abRepeatController.hasMarkerB) {
-                        abRepeatController.setMarkerB(pos);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Point B set at ${SubtitleCue.formatTimestamp(pos)}. Looping.'), duration: const Duration(seconds: 1)),
-                        );
-                      } else {
-                        abRepeatController.clear();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('A-B Loop Cleared'), duration: Duration(seconds: 1)),
-                        );
-                      }
-                    },
-                  ),
 
-                  // Closed Captions (CC) Toggle
-                  IconButton(
-                    icon: Icon(
-                      Icons.closed_caption,
-                      color: captionController.sourceType != SubtitleSourceType.off
-                          ? const Color(0xFF818CF8)
-                          : Colors.white70,
+                    // A-B Repeat Button
+                    IconButton(
+                      icon: Icon(
+                        Icons.repeat,
+                        color: abRepeatController.isActive ? const Color(0xFF10B981) : Colors.white70,
+                      ),
+                      tooltip: abRepeatController.isActive ? l10n.abLoopActive : l10n.setAbRepeat,
+                      onPressed: () {
+                        final pos = playerController.position.inMilliseconds;
+                        if (!abRepeatController.hasMarkerA) {
+                          abRepeatController.setMarkerA(pos);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content: Text(l10n.pointASetAt(SubtitleCue.formatTimestamp(pos))),
+                                duration: const Duration(seconds: 1)),
+                          );
+                        } else if (!abRepeatController.hasMarkerB) {
+                          abRepeatController.setMarkerB(pos);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content: Text(l10n.pointBSetAt(SubtitleCue.formatTimestamp(pos))),
+                                duration: const Duration(seconds: 1)),
+                          );
+                        } else {
+                          abRepeatController.clear();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(l10n.abLoopCleared), duration: const Duration(seconds: 1)),
+                          );
+                        }
+                      },
                     ),
-                    tooltip: 'Closed Captions (C)',
-                    onPressed: () async {
-                      if (captionController.sourceType != SubtitleSourceType.off) {
-                        captionController.setSourceType(SubtitleSourceType.off);
-                      } else {
-                        final item = playlistController.currentItem;
-                        if (item != null) {
-                          final cachedCues = await ASRService.instance.checkCachedTranscript(item.id);
-                          if (cachedCues != null && cachedCues.isNotEmpty) {
-                            captionController.setCues(cachedCues);
-                            captionController.setSourceType(SubtitleSourceType.autoASR);
-                          } else if (captionController.sidecars.isNotEmpty) {
-                            captionController.setSourceType(
-                              SubtitleSourceType.sidecar,
-                              sidecar: captionController.sidecars.first,
-                            );
-                          } else {
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('No transcript file found. Please use the "Start AI Transcription" button to generate script.'),
-                                  duration: Duration(seconds: 3),
-                                ),
+
+                    // Closed Captions (CC) Toggle
+                    IconButton(
+                      icon: Icon(
+                        Icons.closed_caption,
+                        color: captionController.sourceType != SubtitleSourceType.off
+                            ? const Color(0xFF818CF8)
+                            : Colors.white70,
+                      ),
+                      tooltip: l10n.closedCaptionsShortcut,
+                      onPressed: () async {
+                        if (captionController.sourceType != SubtitleSourceType.off) {
+                          captionController.setSourceType(SubtitleSourceType.off);
+                        } else {
+                          final item = playlistController.currentItem;
+                          if (item != null) {
+                            final cachedCues = await ASRService.instance.checkCachedTranscript(item.id);
+                            if (cachedCues != null && cachedCues.isNotEmpty) {
+                              captionController.setCues(cachedCues);
+                              captionController.setSourceType(SubtitleSourceType.autoASR);
+                            } else if (captionController.sidecars.isNotEmpty) {
+                              captionController.setSourceType(
+                                SubtitleSourceType.sidecar,
+                                sidecar: captionController.sidecars.first,
                               );
+                            } else {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(l10n.transcriptMissing),
+                                    duration: Duration(seconds: 3),
+                                  ),
+                                );
+                              }
                             }
                           }
                         }
-                      }
-                    },
-                  ),
+                      },
+                    ),
 
-                  // Transcript Sidebar Toggle
-                  IconButton(
-                    icon: const Icon(Icons.subtitles, color: Colors.white70),
-                    tooltip: 'Interactive Transcript Panel',
-                    onPressed: onToggleTranscriptSidebar,
-                  ),
+                    // Transcript Sidebar Toggle
+                    IconButton(
+                      icon: const Icon(Icons.subtitles, color: Colors.white70),
+                      tooltip: l10n.interactiveTranscriptPanel,
+                      onPressed: onToggleTranscriptSidebar,
+                    ),
 
-                  // Video Frame Snapshot (Hot key S)
-                  IconButton(
-                    icon: const Icon(Icons.camera_alt, color: Colors.white70),
-                    tooltip: hasVideo ? 'Snapshot Frame (S)' : 'Snapshot unavailable for audio files',
-                    onPressed: hasVideo
-                        ? () async {
-                            final path = await playerController.captureSnapshot();
-                            if (context.mounted && path != null) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Snapshot saved: $path')),
-                              );
+                    // Video Frame Snapshot (Hot key S)
+                    IconButton(
+                      icon: const Icon(Icons.camera_alt, color: Colors.white70),
+                      tooltip: hasVideo ? l10n.snapshotFrameShortcut : l10n.snapshotUnavailableAudio,
+                      onPressed: hasVideo
+                          ? () async {
+                              final path = await playerController.captureSnapshot();
+                              if (context.mounted && path != null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(l10n.snapshotSavedPath(path))),
+                                );
+                              }
                             }
-                          }
-                        : () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Snapshot unavailable for audio files')),
-                            );
-                          },
-                  ),
+                          : () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(l10n.snapshotUnavailableAudio)),
+                              );
+                            },
+                    ),
 
-                  // Sleep Timer
-                  IconButton(
-                    icon: const Icon(Icons.nightlight_round, color: Colors.white70),
-                    tooltip: 'Sleep Timer',
-                    onPressed: onOpenSleepTimer,
-                  ),
+                    // Sleep Timer
+                    IconButton(
+                      icon: const Icon(Icons.nightlight_round, color: Colors.white70),
+                      tooltip: l10n.sleepTimer,
+                      onPressed: onOpenSleepTimer,
+                    ),
 
-                  // Track Settings (Aspect ratio, Audio/Subtitle tracks)
-                  IconButton(
-                    icon: const Icon(Icons.tune, color: Colors.white70),
-                    tooltip: 'Audio & Subtitle Tracks',
-                    onPressed: onOpenTrackMenu,
-                  ),
+                    // Track Settings (Aspect ratio, Audio/Subtitle tracks)
+                    IconButton(
+                      icon: const Icon(Icons.tune, color: Colors.white70),
+                      tooltip: l10n.audioSubtitleTracks,
+                      onPressed: onOpenTrackMenu,
+                    ),
 
-                  // Fullscreen Toggle
-                  IconButton(
-                    icon: const Icon(Icons.fullscreen, color: Colors.white),
-                    tooltip: 'Fullscreen (F)',
-                    onPressed: onToggleFullscreen,
-                  ),
-                ],
-              ),
-            ],
+                    // Fullscreen Toggle
+                    IconButton(
+                      icon: const Icon(Icons.fullscreen, color: Colors.white),
+                      tooltip: l10n.fullscreen,
+                      onPressed: onToggleFullscreen,
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
 }
 
 class VerticalVolumeControl extends StatelessWidget {
@@ -377,8 +379,10 @@ class VerticalVolumeControl extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return PopupMenuButton<void>(
-      tooltip: 'Volume',
+      tooltip: l10n.volume,
       offset: const Offset(-4, -250),
       constraints: const BoxConstraints(
         minWidth: 50,
@@ -545,14 +549,10 @@ class SeekIconPainter extends CustomPainter {
 
     // 10:30 position on clock face = -135° (-3pi/4 rad)
     // 1:30 position on clock face = -45° (-pi/4 rad)
-    final double endAngle = isForward
-        ? -45 * (math.pi / 180)
-        : -135 * (math.pi / 180);
+    final double endAngle = isForward ? -45 * (math.pi / 180) : -135 * (math.pi / 180);
 
     const double sweepDegrees = 270.0;
-    final double sweepAngle = isForward
-        ? sweepDegrees * (math.pi / 180)
-        : -sweepDegrees * (math.pi / 180);
+    final double sweepAngle = isForward ? sweepDegrees * (math.pi / 180) : -sweepDegrees * (math.pi / 180);
 
     final double startAngle = endAngle - sweepAngle;
 
@@ -566,9 +566,7 @@ class SeekIconPainter extends CustomPainter {
     // Tangent direction angle at tip:
     // Clockwise (forward): alpha = endAngle + pi/2
     // Counter-clockwise (backward): alpha = endAngle - pi/2
-    final double alpha = isForward
-        ? endAngle + (math.pi / 2)
-        : endAngle - (math.pi / 2);
+    final double alpha = isForward ? endAngle + (math.pi / 2) : endAngle - (math.pi / 2);
 
     const double headLength = 5.5;
     const double wingAngle = 30 * (math.pi / 180);

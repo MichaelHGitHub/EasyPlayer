@@ -104,42 +104,40 @@ class _TranscriptSidebarState extends State<TranscriptSidebar> {
     final position = _scrollController.position;
     final double estimatedContentExtent = position.maxScrollExtent + position.viewportDimension;
     final double estimatedItemTop = estimatedContentExtent * index / cues.length;
-    final double targetOffset = (estimatedItemTop - position.viewportDimension * 0.35)
-        .clamp(0.0, position.maxScrollExtent)
-        .toDouble();
+    final double targetOffset =
+        (estimatedItemTop - position.viewportDimension * 0.35).clamp(0.0, position.maxScrollExtent).toDouble();
     _scrollController
         .animateTo(
-          targetOffset,
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeInOut,
-        )
+      targetOffset,
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeInOut,
+    )
         .then((_) {
-          if (!mounted ||
-              !widget.captionController.isAutoScrollLocked ||
-              (expectedCueId != null &&
-                  widget.captionController.currentCue?.id != expectedCueId)) {
-            return;
-          }
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (expectedCueId != null &&
-                widget.captionController.currentCue?.id != expectedCueId) {
-              return;
-            }
-            final BuildContext? targetContext = _cueItemKeys[index]?.currentContext;
-            if (targetContext != null) {
-              Scrollable.ensureVisible(
-                targetContext,
-                alignment: 0.35,
-                alignmentPolicy: ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
-                duration: const Duration(milliseconds: 150),
-                curve: Curves.easeInOut,
-              );
-            }
-          });
-        });
+      if (!mounted ||
+          !widget.captionController.isAutoScrollLocked ||
+          (expectedCueId != null && widget.captionController.currentCue?.id != expectedCueId)) {
+        return;
+      }
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (expectedCueId != null && widget.captionController.currentCue?.id != expectedCueId) {
+          return;
+        }
+        final BuildContext? targetContext = _cueItemKeys[index]?.currentContext;
+        if (targetContext != null) {
+          Scrollable.ensureVisible(
+            targetContext,
+            alignment: 0.35,
+            alignmentPolicy: ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
+            duration: const Duration(milliseconds: 150),
+            curve: Curves.easeInOut,
+          );
+        }
+      });
+    });
   }
 
   void _showEditCueDialog(SubtitleCue cue) {
+    final l10n = AppLocalizations.of(context)!;
     final TextEditingController editController = TextEditingController(text: cue.text);
 
     showDialog(
@@ -147,7 +145,7 @@ class _TranscriptSidebarState extends State<TranscriptSidebar> {
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1E293B),
         title: Text(
-          'Edit Cue (${cue.displayStartTime})',
+          l10n.editCue(cue.displayStartTime),
           style: const TextStyle(color: Colors.white, fontSize: 16),
         ),
         content: TextField(
@@ -162,11 +160,11 @@ class _TranscriptSidebarState extends State<TranscriptSidebar> {
         ),
         actions: [
           TextButton(
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
             onPressed: () => Navigator.pop(context),
           ),
           ElevatedButton(
-            child: const Text('Save'),
+            child: Text(l10n.save),
             onPressed: () {
               widget.captionController.editCueText(cue.id, editController.text);
               Navigator.pop(context);
@@ -178,6 +176,7 @@ class _TranscriptSidebarState extends State<TranscriptSidebar> {
   }
 
   Future<void> _exportTranscript(String format) async {
+    final l10n = AppLocalizations.of(context)!;
     final cues = widget.captionController.cues;
     if (cues.isEmpty) return;
 
@@ -199,13 +198,13 @@ class _TranscriptSidebarState extends State<TranscriptSidebar> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Exported to: $path')),
+          SnackBar(content: Text(l10n.exportedTo(path))),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to export: $e')),
+          SnackBar(content: Text(l10n.exportFailed(e))),
         );
       }
     }
@@ -213,6 +212,8 @@ class _TranscriptSidebarState extends State<TranscriptSidebar> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
       width: 360,
       color: const Color(0xFF1E293B),
@@ -227,9 +228,9 @@ class _TranscriptSidebarState extends State<TranscriptSidebar> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Expanded(
+                    Expanded(
                       child: Text(
-                        'Interactive Transcript',
+                        l10n.transcriptSidebar,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
@@ -240,11 +241,11 @@ class _TranscriptSidebarState extends State<TranscriptSidebar> {
                         // Export popup
                         PopupMenuButton<String>(
                           icon: const Icon(Icons.file_download, color: Colors.white70),
-                          tooltip: 'Export Transcript',
+                          tooltip: l10n.exportTranscript,
                           itemBuilder: (context) => [
-                            const PopupMenuItem(value: 'vtt', child: Text('Export as WebVTT (.vtt)')),
-                            const PopupMenuItem(value: 'srt', child: Text('Export as SubRip (.srt)')),
-                            const PopupMenuItem(value: 'txt', child: Text('Export as Plain Text (.txt)')),
+                            PopupMenuItem(value: 'vtt', child: Text(l10n.exportAsVtt)),
+                            PopupMenuItem(value: 'srt', child: Text(l10n.exportAsSrt)),
+                            PopupMenuItem(value: 'txt', child: Text(l10n.exportAsText)),
                           ],
                           onSelected: _exportTranscript,
                         ),
@@ -262,7 +263,7 @@ class _TranscriptSidebarState extends State<TranscriptSidebar> {
                   controller: _searchController,
                   style: const TextStyle(color: Colors.white, fontSize: 13),
                   decoration: InputDecoration(
-                    hintText: 'Search transcript...',
+                    hintText: l10n.searchTranscript,
                     hintStyle: const TextStyle(color: Colors.white38),
                     prefixIcon: const Icon(Icons.search, size: 20, color: Colors.white54),
                     suffixIcon: _searchController.text.isNotEmpty
@@ -289,7 +290,10 @@ class _TranscriptSidebarState extends State<TranscriptSidebar> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          '${widget.captionController.currentSearchMatchIndex + 1} of ${widget.captionController.searchMatchIndices.length} matches',
+                          l10n.searchMatches(
+                            widget.captionController.currentSearchMatchIndex + 1,
+                            widget.captionController.searchMatchIndices.length,
+                          ),
                           style: const TextStyle(fontSize: 12, color: Color(0xFF818CF8)),
                         ),
                         Row(
@@ -326,6 +330,7 @@ class _TranscriptSidebarState extends State<TranscriptSidebar> {
             animation: ASRService.instance,
             builder: (context, _) {
               final asrState = ASRService.instance.state;
+              final l10n = AppLocalizations.of(context)!;
               if (asrState.status == ASRStatus.error) {
                 return Container(
                   margin: const EdgeInsets.all(8.0),
@@ -341,7 +346,7 @@ class _TranscriptSidebarState extends State<TranscriptSidebar> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          asrState.errorMessage ?? 'Speech recognition failed.',
+                          asrState.errorMessage ?? l10n.speechRecognitionFailed,
                           style: const TextStyle(fontSize: 12, color: Color(0xFFFCA5A5)),
                         ),
                       ),
@@ -350,18 +355,15 @@ class _TranscriptSidebarState extends State<TranscriptSidebar> {
                 );
               }
               if (asrState.isBusy) {
-                final l10n = AppLocalizations.of(context);
                 final String status;
                 if (asrState.status == ASRStatus.downloadingModel) {
-                  status =
-                      '${l10n?.modelDownloading ?? 'Downloading speech model'}: ${(asrState.progress * 100).toInt()}%';
+                  status = '${l10n.modelDownloading}: ${(asrState.progress * 100).toInt()}%';
                 } else if (asrState.status == ASRStatus.modelLoading) {
-                  status = l10n?.modelLoading ?? 'Loading speech model...';
+                  status = l10n.modelLoading;
                 } else if (asrState.status == ASRStatus.extractingAudio) {
-                  status = 'Extracting audio stream...';
+                  status = l10n.extractingAudio;
                 } else {
-                  status =
-                      '${l10n?.transcribing ?? 'Transcribing speech'}: ${(asrState.progress * 100).toInt()}%';
+                  status = '${l10n.transcribing}: ${(asrState.progress * 100).toInt()}%';
                 }
                 return Container(
                   margin: const EdgeInsets.all(8.0),
@@ -405,8 +407,7 @@ class _TranscriptSidebarState extends State<TranscriptSidebar> {
                           const SizedBox(width: 6),
                           Expanded(
                             child: Text(
-                              l10n?.scriptGenerationNotice ??
-                                  'Generating transcript script. Please wait until generation completes.',
+                              l10n.scriptGenerationNotice,
                               style: const TextStyle(fontSize: 11, color: Color(0xFFFBBF24), height: 1.3),
                             ),
                           ),
@@ -437,11 +438,11 @@ class _TranscriptSidebarState extends State<TranscriptSidebar> {
                           children: [
                             const Icon(Icons.subtitles_off, size: 48, color: Colors.white30),
                             const SizedBox(height: 12),
-                            const Text('No subtitles or transcript available', style: TextStyle(color: Colors.white54)),
+                            Text(l10n.noTranscriptAvailable, style: const TextStyle(color: Colors.white54)),
                             const SizedBox(height: 8),
                             ElevatedButton.icon(
                               icon: const Icon(Icons.transcribe),
-                              label: const Text('Start AI Transcription'),
+                              label: Text(l10n.startAiTranscription),
                               onPressed: () {
                                 final item = widget.playerController.playlistController.currentItem;
                                 if (item != null) {
@@ -526,8 +527,8 @@ class _TranscriptSidebarState extends State<TranscriptSidebar> {
                                                   color: const Color(0xFF0284C7).withOpacity(0.4),
                                                   borderRadius: BorderRadius.circular(2),
                                                 ),
-                                                child: const Text('Edited',
-                                                    style: TextStyle(fontSize: 10, color: Color(0xFF38BDF8))),
+                                                child: Text(l10n.edited,
+                                                    style: const TextStyle(fontSize: 10, color: Color(0xFF38BDF8))),
                                               ),
                                             ),
                                         ],
@@ -540,7 +541,7 @@ class _TranscriptSidebarState extends State<TranscriptSidebar> {
                                       children: [
                                         IconButton(
                                           icon: const Icon(Icons.repeat_one, size: 16, color: Colors.white54),
-                                          tooltip: 'Loop Sentence',
+                                          tooltip: l10n.loopSentence,
                                           onPressed: () {
                                             widget.captionController.loopSentence(cue, widget.abRepeatController);
                                             widget.playerController.seek(Duration(milliseconds: cue.startMs));
@@ -548,7 +549,7 @@ class _TranscriptSidebarState extends State<TranscriptSidebar> {
                                         ),
                                         IconButton(
                                           icon: const Icon(Icons.edit, size: 16, color: Colors.white54),
-                                          tooltip: 'Edit Text',
+                                          tooltip: l10n.editText,
                                           onPressed: () => _showEditCueDialog(cue),
                                         ),
                                       ],
@@ -574,7 +575,7 @@ class _TranscriptSidebarState extends State<TranscriptSidebar> {
                         right: 16,
                         child: FloatingActionButton.extended(
                           icon: const Icon(Icons.sync, size: 18),
-                          label: const Text('Resume Auto-scroll'),
+                          label: Text(l10n.resumeAutoScroll),
                           backgroundColor: const Color(0xFF6366F1),
                           onPressed: () {
                             widget.captionController.setAutoScrollLocked(true);

@@ -1,6 +1,7 @@
 import 'package:easy_player/controllers/ab_repeat_controller.dart';
 import 'package:easy_player/controllers/caption_controller.dart';
 import 'package:easy_player/controllers/player_controller.dart';
+import 'package:easy_player/l10n/app_localizations.dart';
 import 'package:easy_player/models/subtitle_cue.dart';
 import 'package:easy_player/ui/widgets/transcript_sidebar.dart';
 import 'package:flutter/material.dart';
@@ -29,6 +30,8 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: TranscriptSidebar(
             captionController: captionController,

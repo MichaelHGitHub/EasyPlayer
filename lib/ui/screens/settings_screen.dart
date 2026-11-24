@@ -3,6 +3,7 @@ import '../../controllers/caption_controller.dart';
 import '../../controllers/player_controller.dart';
 import '../../core/constants/settings_keys.dart';
 import '../../core/utils/storage_paths.dart';
+import '../../l10n/app_localizations.dart';
 import '../../services/settings_service.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -56,12 +57,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Cache cleared successfully.')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.cacheCleared)),
       );
     }
   }
 
   void _showAboutDialog() {
+    final l10n = AppLocalizations.of(context)!;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -75,37 +78,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
               errorBuilder: (_, __, ___) => const Icon(Icons.play_circle_fill, color: Color(0xFF818CF8)),
             ),
             const SizedBox(width: 12),
-            const Text('EasyPlayer', style: TextStyle(color: Colors.white)),
+            Text(l10n.appTitle, style: const TextStyle(color: Colors.white)),
           ],
         ),
-        content: const Column(
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Version 1.0.0',
-              style: TextStyle(color: Colors.white70, fontSize: 13),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Developed by PandaSoft',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Cross-platform audio and video player with on-device offline Automatic Speech Recognition (ASR). Zero server dependencies.',
-              style: TextStyle(color: Colors.white70, fontSize: 12),
-            ),
-            SizedBox(height: 12),
-            Text(
-              'Copyright © 2026 PandaSoft. All rights reserved.',
-              style: TextStyle(color: Colors.white38, fontSize: 11),
-            ),
+            Text(l10n.aboutVersion, style: const TextStyle(color: Colors.white70, fontSize: 13)),
+            const SizedBox(height: 8),
+            Text(l10n.developerName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            Text(l10n.aboutDescription, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+            const SizedBox(height: 12),
+            Text(l10n.copyright, style: const TextStyle(color: Colors.white38, fontSize: 11)),
           ],
         ),
         actions: [
           TextButton(
-            child: const Text('OK'),
+            child: Text(l10n.ok),
             onPressed: () => Navigator.pop(context),
           ),
         ],
@@ -116,21 +107,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final s = _settingsService.settings;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: Text(l10n.settings),
         backgroundColor: const Color(0xFF1E293B),
       ),
       body: ListView(
         children: [
           // Section: General & Language
-          _buildSectionHeader('General & Localization'),
+          _buildSectionHeader(l10n.settingsGeneralLocalization),
           ListTile(
-            title: const Text('UI Language', style: TextStyle(color: Colors.white)),
+            title: Text(l10n.language, style: const TextStyle(color: Colors.white)),
             subtitle: Text(
-              s.uiLanguage == 'zh_CN' ? '简体中文' : (s.uiLanguage == 'en' ? 'English' : 'Follow System'),
+              s.uiLanguage == 'zh_CN' ? l10n.chinese : (s.uiLanguage == 'en' ? l10n.english : l10n.followSystem),
               style: const TextStyle(color: Colors.white54),
             ),
             trailing: DropdownButton<String>(
@@ -138,10 +130,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               dropdownColor: const Color(0xFF1E293B),
               style: const TextStyle(color: Colors.white),
               underline: const SizedBox(),
-              items: const [
-                DropdownMenuItem(value: 'system', child: Text('Follow System')),
-                DropdownMenuItem(value: 'en', child: Text('English')),
-                DropdownMenuItem(value: 'zh_CN', child: Text('简体中文')),
+              items: [
+                DropdownMenuItem(value: 'system', child: Text(l10n.followSystem)),
+                DropdownMenuItem(value: 'en', child: Text(l10n.english)),
+                DropdownMenuItem(value: 'zh_CN', child: Text(l10n.chinese)),
               ],
               onChanged: (val) {
                 if (val != null) {
@@ -152,8 +144,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           SwitchListTile(
-            title: const Text('Hardware Acceleration (GPU)', style: TextStyle(color: Colors.white)),
-            subtitle: const Text('Direct3D / MediaCodec hardware decoding with safe CPU fallback', style: TextStyle(color: Colors.white54, fontSize: 12)),
+            title: Text(l10n.hardwareAcceleration, style: const TextStyle(color: Colors.white)),
+            subtitle:
+                Text(l10n.hardwareAccelerationDescription, style: const TextStyle(color: Colors.white54, fontSize: 12)),
             value: s.hardwareAcceleration,
             activeTrackColor: const Color(0xFF6366F1),
             onChanged: (val) {
@@ -162,22 +155,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           ),
           SwitchListTile(
-            title: const Text('Record Playback History', style: TextStyle(color: Colors.white)),
-            subtitle: const Text('Save recently opened media to the Recently Played shelf', style: TextStyle(color: Colors.white54, fontSize: 12)),
+            title: Text(l10n.recordPlaybackHistory, style: const TextStyle(color: Colors.white)),
+            subtitle: Text(l10n.recordPlaybackHistoryDescription,
+                style: const TextStyle(color: Colors.white54, fontSize: 12)),
             value: s.recordPlaybackHistory,
             activeTrackColor: const Color(0xFF6366F1),
             onChanged: (val) {
-              _settingsService.update(SettingsKeys.recordPlaybackHistory, val, (set) => set.recordPlaybackHistory = val);
+              _settingsService.update(
+                  SettingsKeys.recordPlaybackHistory, val, (set) => set.recordPlaybackHistory = val);
               setState(() {});
             },
           ),
 
           // Section: Playback & Navigation
-          _buildSectionHeader('Playback & Navigation'),
+          _buildSectionHeader(l10n.playbackNavigation),
           ListTile(
-            title: const Text('Fast Backward Duration', style: TextStyle(color: Colors.white)),
+            title: Text(l10n.fastBackwardDuration, style: const TextStyle(color: Colors.white)),
             subtitle: Text(
-              '${s.skipBackwardSeconds} seconds',
+              '${s.skipBackwardSeconds} ${l10n.seconds}',
               style: const TextStyle(color: Colors.white54),
             ),
             trailing: DropdownButton<int>(
@@ -188,21 +183,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
               items: [5, 10, 15, 20, 25, 30].map((sec) {
                 return DropdownMenuItem<int>(
                   value: sec,
-                  child: Text('${sec}s'),
+                  child: Text('$sec ${l10n.seconds}'),
                 );
               }).toList(),
               onChanged: (val) {
                 if (val != null) {
-                  _settingsService.update(SettingsKeys.skipBackwardSeconds, val, (set) => set.skipBackwardSeconds = val);
+                  _settingsService.update(
+                      SettingsKeys.skipBackwardSeconds, val, (set) => set.skipBackwardSeconds = val);
                   setState(() {});
                 }
               },
             ),
           ),
           ListTile(
-            title: const Text('Fast Forward Duration', style: TextStyle(color: Colors.white)),
+            title: Text(l10n.fastForwardDuration, style: const TextStyle(color: Colors.white)),
             subtitle: Text(
-              '${s.skipForwardSeconds} seconds',
+              '${s.skipForwardSeconds} ${l10n.seconds}',
               style: const TextStyle(color: Colors.white54),
             ),
             trailing: DropdownButton<int>(
@@ -213,7 +209,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               items: [5, 10, 15, 20, 25, 30].map((sec) {
                 return DropdownMenuItem<int>(
                   value: sec,
-                  child: Text('${sec}s'),
+                  child: Text('$sec ${l10n.seconds}'),
                 );
               }).toList(),
               onChanged: (val) {
@@ -226,10 +222,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
 
           // Section: Audio Enhancements
-          _buildSectionHeader('Audio Enhancements'),
+          _buildSectionHeader(l10n.audioEnhancements),
           SwitchListTile(
-            title: const Text('Dynamic Loudness Normalization', style: TextStyle(color: Colors.white)),
-            subtitle: const Text('Automatically levels out audio volume across tracks (loudnorm)', style: TextStyle(color: Colors.white54, fontSize: 12)),
+            title: Text(l10n.loudnessNormalization, style: const TextStyle(color: Colors.white)),
+            subtitle: Text(l10n.loudnessNormalizationDescription,
+                style: const TextStyle(color: Colors.white54, fontSize: 12)),
             value: s.audioNormalization,
             activeTrackColor: const Color(0xFF6366F1),
             onChanged: (val) {
@@ -242,8 +239,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           ),
           SwitchListTile(
-            title: const Text('Voice Clarity Boost', style: TextStyle(color: Colors.white)),
-            subtitle: const Text('High-pass filter & vocal EQ boost to clarify dialogue', style: TextStyle(color: Colors.white54, fontSize: 12)),
+            title: Text(l10n.vocalClarityBoost, style: const TextStyle(color: Colors.white)),
+            subtitle:
+                Text(l10n.vocalClarityBoostDescription, style: const TextStyle(color: Colors.white54, fontSize: 12)),
             value: s.voiceClarityBoost,
             activeTrackColor: const Color(0xFF6366F1),
             onChanged: (val) {
@@ -257,10 +255,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
 
           // Section: Subtitles & ASR
-          _buildSectionHeader('Subtitles & Speech Recognition (ASR)'),
+          _buildSectionHeader(l10n.subtitlesAndAsr),
           SwitchListTile(
-            title: const Text('Override Complex Subtitle Styling', style: TextStyle(color: Colors.white)),
-            subtitle: const Text('Forces standard EasyPlayer typography over ASS/SSA fansub styles', style: TextStyle(color: Colors.white54, fontSize: 12)),
+            title: Text(l10n.overrideAssStyling, style: const TextStyle(color: Colors.white)),
+            subtitle:
+                Text(l10n.overrideAssStylingDescription, style: const TextStyle(color: Colors.white54, fontSize: 12)),
             value: s.overrideAssStyling,
             activeTrackColor: const Color(0xFF6366F1),
             onChanged: (val) {
@@ -270,8 +269,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           ),
           SwitchListTile(
-            title: const Text('Show Audio Event Tags', style: TextStyle(color: Colors.white)),
-            subtitle: const Text('Display tags such as [Laughter], [Applause] in captions', style: TextStyle(color: Colors.white54, fontSize: 12)),
+            title: Text(l10n.showAudioEventTags, style: const TextStyle(color: Colors.white)),
+            subtitle:
+                Text(l10n.showAudioEventTagsDescription, style: const TextStyle(color: Colors.white54, fontSize: 12)),
             value: s.showAudioEventTags,
             activeTrackColor: const Color(0xFF6366F1),
             onChanged: (val) {
@@ -280,39 +280,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           ),
           SwitchListTile(
-            title: const Text('Include Subtitles in Snapshots', style: TextStyle(color: Colors.white)),
-            subtitle: const Text('Composite active subtitle text when capturing video frames', style: TextStyle(color: Colors.white54, fontSize: 12)),
+            title: Text(l10n.includeSubtitlesInSnapshots, style: const TextStyle(color: Colors.white)),
+            subtitle: Text(l10n.includeSubtitlesInSnapshotsDescription,
+                style: const TextStyle(color: Colors.white54, fontSize: 12)),
             value: s.snapshotIncludeSubtitles,
             activeTrackColor: const Color(0xFF6366F1),
             onChanged: (val) {
-              _settingsService.update(SettingsKeys.snapshotIncludeSubtitles, val, (set) => set.snapshotIncludeSubtitles = val);
+              _settingsService.update(
+                  SettingsKeys.snapshotIncludeSubtitles, val, (set) => set.snapshotIncludeSubtitles = val);
               setState(() {});
             },
           ),
 
           // Section: Storage & Cache
-          _buildSectionHeader('Storage & Cache Management'),
+          _buildSectionHeader(l10n.storageAndCache),
           ListTile(
-            title: const Text('Cached Transcripts & Thumbnails', style: TextStyle(color: Colors.white)),
+            title: Text(l10n.cachedTranscriptsAndThumbnails, style: const TextStyle(color: Colors.white)),
             subtitle: Text(
               _isLoadingCache
-                  ? 'Calculating storage...'
-                  : '${(_cacheSizeBytes / (1024 * 1024)).toStringAsFixed(2)} MB used',
+                  ? l10n.calculatingStorage
+                  : l10n.cacheSizeUsed((_cacheSizeBytes / (1024 * 1024)).toStringAsFixed(2)),
               style: const TextStyle(color: Colors.white54),
             ),
             trailing: ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFDC2626)),
               onPressed: _clearCache,
-              child: const Text('Clear Cache'),
+              child: Text(l10n.clearCache),
             ),
           ),
 
           // Section: About
-          _buildSectionHeader('About'),
+          _buildSectionHeader(l10n.about),
           ListTile(
             leading: const Icon(Icons.info_outline, color: Color(0xFF818CF8)),
-            title: const Text('About EasyPlayer', style: TextStyle(color: Colors.white)),
-            subtitle: const Text('PandaSoft • Version 1.0.0', style: TextStyle(color: Colors.white54)),
+            title: Text(l10n.about, style: const TextStyle(color: Colors.white)),
+            subtitle:
+                Text('${l10n.developerName} • ${l10n.aboutVersion}', style: const TextStyle(color: Colors.white54)),
             trailing: const Icon(Icons.chevron_right, color: Colors.white54),
             onTap: _showAboutDialog,
           ),

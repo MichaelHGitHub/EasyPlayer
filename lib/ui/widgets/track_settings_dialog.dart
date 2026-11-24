@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../controllers/caption_controller.dart';
 import '../../controllers/player_controller.dart';
+import '../../l10n/app_localizations.dart';
 import '../../models/playback_mode.dart';
 
 class TrackSettingsDialog extends StatefulWidget {
@@ -22,10 +23,11 @@ class _TrackSettingsDialogState extends State<TrackSettingsDialog> {
   Widget build(BuildContext context) {
     final player = widget.playerController;
     final caption = widget.captionController;
+    final l10n = AppLocalizations.of(context)!;
 
     return AlertDialog(
       backgroundColor: const Color(0xFF1E293B),
-      title: const Text('Track & Video Settings', style: TextStyle(color: Colors.white, fontSize: 16)),
+      title: Text(l10n.trackVideoSettings, style: const TextStyle(color: Colors.white, fontSize: 16)),
       content: SizedBox(
         width: 400,
         child: SingleChildScrollView(
@@ -34,18 +36,18 @@ class _TrackSettingsDialogState extends State<TrackSettingsDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Aspect Ratio
-              const Text('Aspect Ratio Mode', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white70)),
+              Text(l10n.aspectRatioMode, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white70)),
               DropdownButton<AspectRatioMode>(
                 value: player.aspectRatioMode,
                 isExpanded: true,
                 dropdownColor: const Color(0xFF0F172A),
                 style: const TextStyle(color: Colors.white),
-                items: const [
-                  DropdownMenuItem(value: AspectRatioMode.fit, child: Text('Fit (Letterbox)')),
-                  DropdownMenuItem(value: AspectRatioMode.fill, child: Text('Fill (Crop)')),
-                  DropdownMenuItem(value: AspectRatioMode.stretch, child: Text('Stretch')),
-                  DropdownMenuItem(value: AspectRatioMode.fixed16_9, child: Text('Fixed 16:9')),
-                  DropdownMenuItem(value: AspectRatioMode.fixed4_3, child: Text('Fixed 4:3')),
+                items: [
+                  DropdownMenuItem(value: AspectRatioMode.fit, child: Text(l10n.aspectFit)),
+                  DropdownMenuItem(value: AspectRatioMode.fill, child: Text(l10n.aspectFill)),
+                  DropdownMenuItem(value: AspectRatioMode.stretch, child: Text(l10n.aspectStretch)),
+                  DropdownMenuItem(value: AspectRatioMode.fixed16_9, child: Text(l10n.aspect16_9)),
+                  DropdownMenuItem(value: AspectRatioMode.fixed4_3, child: Text(l10n.aspect4_3)),
                 ],
                 onChanged: (mode) {
                   if (mode != null) {
@@ -56,10 +58,10 @@ class _TrackSettingsDialogState extends State<TrackSettingsDialog> {
               const Divider(color: Colors.white24, height: 24),
 
               // Subtitle Source Selection
-              const Text('Subtitle Source', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white70)),
+              Text(l10n.subtitleSource, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white70)),
               RadioListTile<SubtitleSourceType>(
                 dense: true,
-                title: const Text('Off', style: TextStyle(color: Colors.white)),
+                title: Text(l10n.subtitleOff, style: const TextStyle(color: Colors.white)),
                 value: SubtitleSourceType.off,
                 groupValue: caption.sourceType,
                 onChanged: (val) {
@@ -68,7 +70,7 @@ class _TrackSettingsDialogState extends State<TrackSettingsDialog> {
               ),
               RadioListTile<SubtitleSourceType>(
                 dense: true,
-                title: const Text('Auto-Generated ASR Captions', style: TextStyle(color: Colors.white)),
+                title: Text(l10n.subtitleAutoASR, style: const TextStyle(color: Colors.white)),
                 value: SubtitleSourceType.autoASR,
                 groupValue: caption.sourceType,
                 onChanged: (val) async {
@@ -77,8 +79,8 @@ class _TrackSettingsDialogState extends State<TrackSettingsDialog> {
                   } else {
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('No transcript file found. Please use the "Start AI Transcription" button to generate script.'),
+                        SnackBar(
+                          content: Text(l10n.transcriptMissing),
                           duration: Duration(seconds: 3),
                         ),
                       );
@@ -87,9 +89,9 @@ class _TrackSettingsDialogState extends State<TrackSettingsDialog> {
                 },
               ),
               if (caption.sidecars.isNotEmpty) ...[
-                const Padding(
-                  padding: EdgeInsets.only(left: 16.0, top: 4.0),
-                  child: Text('Sidecar Files:', style: TextStyle(color: Colors.white54, fontSize: 12)),
+                Padding(
+                  padding: const EdgeInsets.only(left: 16.0, top: 4.0),
+                  child: Text(l10n.sidecarFiles, style: const TextStyle(color: Colors.white54, fontSize: 12)),
                 ),
                 ...caption.sidecars.map((sidecar) {
                   return RadioListTile<SubtitleSourceType>(
@@ -110,8 +112,9 @@ class _TrackSettingsDialogState extends State<TrackSettingsDialog> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Subtitle Timing Offset', style: TextStyle(color: Colors.white70)),
-                  Text('${caption.subtitleDelayMs} ms', style: const TextStyle(color: Color(0xFF818CF8))),
+                  Text(l10n.subtitleTimingOffset, style: const TextStyle(color: Colors.white70)),
+                  Text('${caption.subtitleDelayMs} ${l10n.milliseconds}',
+                      style: const TextStyle(color: Color(0xFF818CF8))),
                 ],
               ),
               Slider(
@@ -128,7 +131,7 @@ class _TrackSettingsDialogState extends State<TrackSettingsDialog> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Subtitle Vertical Position', style: TextStyle(color: Colors.white70)),
+                  Text(l10n.subtitleVerticalPosition, style: const TextStyle(color: Colors.white70)),
                   Text('${caption.bottomMarginPercent.toInt()}%', style: const TextStyle(color: Color(0xFF818CF8))),
                 ],
               ),
@@ -146,8 +149,8 @@ class _TrackSettingsDialogState extends State<TrackSettingsDialog> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Subtitle Font Size', style: TextStyle(color: Colors.white70)),
-                  Text('${caption.fontSize.toInt()} pt', style: const TextStyle(color: Color(0xFF818CF8))),
+                  Text(l10n.subtitleFontSizePoints, style: const TextStyle(color: Colors.white70)),
+                  Text('${caption.fontSize.toInt()} ${l10n.points}', style: const TextStyle(color: Color(0xFF818CF8))),
                 ],
               ),
               Slider(
@@ -165,7 +168,7 @@ class _TrackSettingsDialogState extends State<TrackSettingsDialog> {
       ),
       actions: [
         ElevatedButton(
-          child: const Text('Done'),
+          child: Text(l10n.done),
           onPressed: () => Navigator.pop(context),
         ),
       ],
