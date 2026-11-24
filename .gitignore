@@ -21,6 +21,9 @@ android/.gradle/
 android/app/build/
 android/build/
 android/local.properties
+android/key.properties
+*.jks
+*.keystore
 android/.idea/
 android/captures/
 android/app/src/main/res/mipmap-*/

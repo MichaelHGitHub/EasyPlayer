@@ -4,6 +4,40 @@ plugins {
     id "dev.flutter.flutter-gradle-plugin"
 }
 
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('key.properties')
+if (keystorePropertiesFile.exists()) {
+    keystorePropertiesFile.withReader('UTF-8') { reader ->
+        keystoreProperties.load(reader)
+    }
+}
+
+def getSigningCredentials(Properties properties) {
+    def storeFile = project.hasProperty('storeFile') ? project.property('storeFile') : (properties['storeFile'] ?: "C:/Code/AndroidStudio_Key/AndroidStudio_Sign_Key")
+    def keyAlias = project.hasProperty('keyAlias') ? project.property('keyAlias') : properties['keyAlias']
+    def storePassword = project.hasProperty('storePassword') ? project.property('storePassword') : properties['storePassword']
+    def keyPassword = project.hasProperty('keyPassword') ? project.property('keyPassword') : properties['keyPassword']
+
+    def isPlaceholder = { val ->
+        return val == null || val.toString().trim().isEmpty() || val.toString().startsWith("YOUR_")
+    }
+
+    if (isPlaceholder(storePassword) || isPlaceholder(keyAlias) || isPlaceholder(keyPassword)) {
+        if (System.getenv("KEYSTORE_PASSWORD")) {
+            storePassword = System.getenv("KEYSTORE_PASSWORD")
+            keyPassword = System.getenv("KEY_PASSWORD") ?: storePassword
+            keyAlias = System.getenv("KEY_ALIAS") ?: keyAlias
+        }
+    }
+
+    return [
+        storeFile: storeFile,
+        keyAlias: keyAlias,
+        storePassword: storePassword,
+        keyPassword: keyPassword
+    ]
+}
+
 def localProperties = new Properties()
 def localPropertiesFile = rootProject.file('local.properties')
 if (localPropertiesFile.exists()) {
@@ -52,9 +86,22 @@ android {
         }
     }
 
+    def creds = getSigningCredentials(keystoreProperties)
+
+    signingConfigs {
+        release {
+            if (creds.storeFile && creds.keyAlias && creds.storePassword) {
+                keyAlias creds.keyAlias
+                keyPassword creds.keyPassword
+                storeFile file(creds.storeFile)
+                storePassword creds.storePassword
+            }
+        }
+    }
+
     buildTypes {
         release {
-            signingConfig signingConfigs.debug
+            signingConfig ((creds.storePassword && !creds.storePassword.startsWith("YOUR_")) ? signingConfigs.release : signingConfigs.debug)
             minifyEnabled false
             shrinkResources false
         }
