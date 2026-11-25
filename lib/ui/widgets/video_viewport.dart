@@ -10,12 +10,14 @@ class VideoViewport extends StatelessWidget {
   final PlayerController playerController;
   final CaptionController captionController;
   final VoidCallback onToggleFullscreen;
+  final VoidCallback? onTapScreen;
 
   const VideoViewport({
     super.key,
     required this.playerController,
     required this.captionController,
     required this.onToggleFullscreen,
+    this.onTapScreen,
   });
 
   BoxFit _getBoxFit(AspectRatioMode mode) {
@@ -62,7 +64,9 @@ class VideoViewport extends StatelessWidget {
         }
       },
       child: GestureDetector(
-        // Double click toggles fullscreen
+        behavior: HitTestBehavior.opaque,
+        // Click toggles controls visibility, double click toggles fullscreen
+        onTap: onTapScreen,
         onDoubleTap: onToggleFullscreen,
         child: Container(
           color: Colors.black,

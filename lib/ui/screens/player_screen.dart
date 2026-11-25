@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
@@ -40,6 +41,10 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
   bool _isSidebarOpen = false;
   bool _isFullscreen = false;
+  bool _areControlsVisible = true;
+  Timer? _controlsTimer;
+  DateTime? _controlsShowTime;
+  static const Duration _controlsTimeout = Duration(seconds: 3);
   final FocusNode _focusNode = FocusNode();
 
   static const MethodChannel _appChannel = MethodChannel('com.pandasoft.easyplayer/app');
@@ -89,6 +94,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
   @override
   void dispose() {
+    _cancelControlsTimer();
     _focusNode.dispose();
     _playerController.dispose();
     _playlistController.dispose();
@@ -98,13 +104,71 @@ class _PlayerScreenState extends State<PlayerScreen> {
     super.dispose();
   }
 
+  void _startControlsTimer() {
+    _controlsTimer?.cancel();
+    _controlsTimer = Timer(_controlsTimeout, () {
+      if (mounted && _isFullscreen) {
+        setState(() {
+          _areControlsVisible = false;
+        });
+      }
+    });
+  }
+
+  void _cancelControlsTimer() {
+    _controlsTimer?.cancel();
+    _controlsTimer = null;
+  }
+
+  void _resetControlsTimer() {
+    if (!_isFullscreen) return;
+    final bool wasVisible = _areControlsVisible;
+    if (!wasVisible) {
+      _controlsShowTime = DateTime.now();
+      setState(() {
+        _areControlsVisible = true;
+      });
+    }
+    _startControlsTimer();
+  }
+
+  void _handleScreenTap() {
+    if (!_isFullscreen) return;
+
+    final now = DateTime.now();
+    final bool wasVisible = _areControlsVisible;
+
+    if (!wasVisible) {
+      _controlsShowTime = now;
+      setState(() {
+        _areControlsVisible = true;
+      });
+      _startControlsTimer();
+    } else {
+      // If controls became visible less than 500ms ago (e.g. from mouse hover/pointer right before tap), keep them visible
+      if (_controlsShowTime != null && now.difference(_controlsShowTime!) < const Duration(milliseconds: 500)) {
+        _startControlsTimer();
+      } else {
+        _cancelControlsTimer();
+        setState(() {
+          _areControlsVisible = false;
+        });
+      }
+    }
+  }
+
   void _toggleFullscreen() {
     setState(() {
       _isFullscreen = !_isFullscreen;
       if (_isFullscreen) {
         SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+        _areControlsVisible = true;
+        _controlsShowTime = DateTime.now();
+        _startControlsTimer();
       } else {
         SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+        _cancelControlsTimer();
+        _areControlsVisible = true;
       }
     });
   }
@@ -130,6 +194,10 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
   void _handleKeyEvent(KeyEvent event) {
     if (event is! KeyDownEvent) return;
+
+    if (_isFullscreen) {
+      _resetControlsTimer();
+    }
 
     final key = event.logicalKey;
 
@@ -200,7 +268,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(l10n.transcriptMissing),
-                duration: Duration(seconds: 3),
+                duration: const Duration(seconds: 3),
               ),
             );
           }
@@ -383,144 +451,174 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
                       // Main Viewport (Video or Audio Visualizer)
                       Expanded(
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            AnimatedBuilder(
-                              animation: _playerController,
-                              builder: (context, _) {
-                                if (_playerController.hasVideo) {
-                                  return VideoViewport(
-                                    playerController: _playerController,
-                                    captionController: _captionController,
-                                    onToggleFullscreen: _toggleFullscreen,
-                                  );
-                                } else {
-                                  return AudioVisualizerViewport(
-                                    playerController: _playerController,
-                                    captionController: _captionController,
-                                  );
-                                }
-                              },
-                            ),
+                        child: MouseRegion(
+                          cursor: (_isFullscreen && !_areControlsVisible)
+                              ? SystemMouseCursors.none
+                              : SystemMouseCursors.basic,
+                          onHover: (_) {
+                            if (_isFullscreen) {
+                              _resetControlsTimer();
+                            }
+                          },
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              AnimatedBuilder(
+                                animation: _playerController,
+                                builder: (context, _) {
+                                  if (_playerController.hasVideo) {
+                                    return VideoViewport(
+                                      playerController: _playerController,
+                                      captionController: _captionController,
+                                      onToggleFullscreen: _toggleFullscreen,
+                                      onTapScreen: _isFullscreen ? _handleScreenTap : null,
+                                    );
+                                  } else {
+                                    return GestureDetector(
+                                      behavior: HitTestBehavior.opaque,
+                                      onTap: _isFullscreen ? _handleScreenTap : null,
+                                      onDoubleTap: _toggleFullscreen,
+                                      child: AudioVisualizerViewport(
+                                        playerController: _playerController,
+                                        captionController: _captionController,
+                                      ),
+                                    );
+                                  }
+                                },
+                              ),
 
-                            // Script Generation In-Progress Banner
-                            AnimatedBuilder(
-                              animation: ASRService.instance,
-                              builder: (context, _) {
-                                final asrState = ASRService.instance.state;
-                                if (asrState.status == ASRStatus.error) {
+                              // Script Generation In-Progress Banner
+                              AnimatedBuilder(
+                                animation: ASRService.instance,
+                                builder: (context, _) {
+                                  final asrState = ASRService.instance.state;
+                                  if (asrState.status == ASRStatus.error) {
+                                    return Align(
+                                      alignment: Alignment.topCenter,
+                                      child: Container(
+                                        margin: const EdgeInsets.only(top: 16.0, left: 16.0, right: 16.0),
+                                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xF03F1D24),
+                                          borderRadius: BorderRadius.circular(16.0),
+                                          border: Border.all(color: const Color(0x99EF4444)),
+                                        ),
+                                        child: Text(
+                                          asrState.errorMessage ?? l10n.speechRecognitionFailed,
+                                          style: const TextStyle(color: Color(0xFFFCA5A5), fontSize: 12),
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                  if (!asrState.isBusy) return const SizedBox.shrink();
+
+                                  final String status;
+                                  if (asrState.status == ASRStatus.downloadingModel) {
+                                    status = '${l10n.modelDownloading}: ${(asrState.progress * 100).toInt()}%';
+                                  } else if (asrState.status == ASRStatus.modelLoading) {
+                                    status = l10n.modelLoading;
+                                  } else if (asrState.status == ASRStatus.extractingAudio) {
+                                    status = l10n.extractingAudio;
+                                  } else {
+                                    status = '${l10n.transcribing}: ${(asrState.progress * 100).toInt()}%';
+                                  }
+
+                                  final String notice = l10n.scriptGenerationNotice;
+
                                   return Align(
                                     alignment: Alignment.topCenter,
                                     child: Container(
                                       margin: const EdgeInsets.only(top: 16.0, left: 16.0, right: 16.0),
                                       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
                                       decoration: BoxDecoration(
-                                        color: const Color(0xF03F1D24),
-                                        borderRadius: BorderRadius.circular(16.0),
-                                        border: Border.all(color: const Color(0x99EF4444)),
+                                        color: const Color(0xF01E1B4B),
+                                        borderRadius: BorderRadius.circular(24.0),
+                                        border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.6)),
+                                        boxShadow: const [
+                                          BoxShadow(color: Colors.black45, blurRadius: 10, offset: Offset(0, 3)),
+                                        ],
                                       ),
-                                      child: Text(
-                                        asrState.errorMessage ?? l10n.speechRecognitionFailed,
-                                        style: const TextStyle(color: Color(0xFFFCA5A5), fontSize: 12),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const SizedBox(
+                                            width: 14,
+                                            height: 14,
+                                            child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF818CF8)),
+                                          ),
+                                          const SizedBox(width: 10),
+                                          Flexible(
+                                            child: Text(
+                                              '$status — $notice',
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   );
-                                }
-                                if (!asrState.isBusy) return const SizedBox.shrink();
+                                },
+                              ),
 
-                                final String status;
-                                if (asrState.status == ASRStatus.downloadingModel) {
-                                  status = '${l10n.modelDownloading}: ${(asrState.progress * 100).toInt()}%';
-                                } else if (asrState.status == ASRStatus.modelLoading) {
-                                  status = l10n.modelLoading;
-                                } else if (asrState.status == ASRStatus.extractingAudio) {
-                                  status = l10n.extractingAudio;
-                                } else {
-                                  status = '${l10n.transcribing}: ${(asrState.progress * 100).toInt()}%';
-                                }
-
-                                final String notice = l10n.scriptGenerationNotice;
-
-                                return Align(
-                                  alignment: Alignment.topCenter,
-                                  child: Container(
-                                    margin: const EdgeInsets.only(top: 16.0, left: 16.0, right: 16.0),
-                                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xF01E1B4B),
-                                      borderRadius: BorderRadius.circular(24.0),
-                                      border: Border.all(color: const Color(0xFF6366F1).withOpacity(0.6)),
-                                      boxShadow: const [
-                                        BoxShadow(color: Colors.black45, blurRadius: 10, offset: Offset(0, 3)),
-                                      ],
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const SizedBox(
-                                          width: 14,
-                                          height: 14,
-                                          child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF818CF8)),
+                              // Floating Controls overlay in fullscreen
+                              if (_isFullscreen)
+                                Align(
+                                  alignment: Alignment.bottomCenter,
+                                  child: AnimatedOpacity(
+                                    opacity: _areControlsVisible ? 1.0 : 0.0,
+                                    duration: const Duration(milliseconds: 300),
+                                    child: IgnorePointer(
+                                      ignoring: !_areControlsVisible,
+                                      child: Listener(
+                                        onPointerDown: (_) => _resetControlsTimer(),
+                                        onPointerMove: (_) => _resetControlsTimer(),
+                                        child: AnimatedBuilder(
+                                          animation: _playerController,
+                                          builder: (context, _) {
+                                            return PlaybackControls(
+                                              playerController: _playerController,
+                                              captionController: _captionController,
+                                              abRepeatController: _abRepeatController,
+                                              playlistController: _playlistController,
+                                              onToggleFullscreen: _toggleFullscreen,
+                                              onToggleTranscriptSidebar: () {
+                                                _resetControlsTimer();
+                                                setState(() => _isSidebarOpen = !_isSidebarOpen);
+                                              },
+                                              onOpenTrackMenu: () {
+                                                _resetControlsTimer();
+                                                showDialog(
+                                                  context: context,
+                                                  builder: (_) => TrackSettingsDialog(
+                                                    playerController: _playerController,
+                                                    captionController: _captionController,
+                                                  ),
+                                                );
+                                              },
+                                              onOpenSleepTimer: () {
+                                                _resetControlsTimer();
+                                                showDialog(
+                                                  context: context,
+                                                  builder: (_) => SleepTimerDialog(
+                                                    sleepTimerService: _sleepTimerService,
+                                                    currentVolume: _playerController.volume,
+                                                  ),
+                                                );
+                                              },
+                                            );
+                                          },
                                         ),
-                                        const SizedBox(width: 10),
-                                        Flexible(
-                                          child: Text(
-                                            '$status — $notice',
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ],
+                                      ),
                                     ),
                                   ),
-                                );
-                              },
-                            ),
-
-                            // Floating Controls overlay in fullscreen
-                            if (_isFullscreen)
-                              Align(
-                                alignment: Alignment.bottomCenter,
-                                child: AnimatedBuilder(
-                                  animation: _playerController,
-                                  builder: (context, _) {
-                                    return PlaybackControls(
-                                      playerController: _playerController,
-                                      captionController: _captionController,
-                                      abRepeatController: _abRepeatController,
-                                      playlistController: _playlistController,
-                                      onToggleFullscreen: _toggleFullscreen,
-                                      onToggleTranscriptSidebar: () {
-                                        setState(() => _isSidebarOpen = !_isSidebarOpen);
-                                      },
-                                      onOpenTrackMenu: () {
-                                        showDialog(
-                                          context: context,
-                                          builder: (_) => TrackSettingsDialog(
-                                            playerController: _playerController,
-                                            captionController: _captionController,
-                                          ),
-                                        );
-                                      },
-                                      onOpenSleepTimer: () {
-                                        showDialog(
-                                          context: context,
-                                          builder: (_) => SleepTimerDialog(
-                                            sleepTimerService: _sleepTimerService,
-                                            currentVolume: _playerController.volume,
-                                          ),
-                                        );
-                                      },
-                                    );
-                                  },
                                 ),
-                              ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
 
