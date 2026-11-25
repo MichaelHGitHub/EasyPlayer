@@ -6,6 +6,13 @@ EasyPlayer seamlessly plays all popular audio and video formats, combining an in
 
 ---
 
+## 📦 Downloads & Release Builds
+
+* **Android build**: [app-release.apk](https://github.com/MichaelHGitHub/EasyPlayer/blob/main/Release/Android/app-release.apk)
+* **Windows build**: [EasyPlay_x64_Release.zip](https://github.com/MichaelHGitHub/EasyPlayer/blob/main/Release/Windows/EasyPlay_x64_Release.zip)
+
+---
+
 ## 🌟 Key Features
 
 *   **Universal Format Support**: Powered by `libmpv` (FFmpeg backend via `media_kit`).
