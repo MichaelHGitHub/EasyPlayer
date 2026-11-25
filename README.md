@@ -13,6 +13,28 @@ EasyPlayer seamlessly plays all popular audio and video formats, combining an in
 
 ---
 
+## 🛠️ Installation & Setup
+
+### Windows
+To get started with EasyPlayer on Windows, follow these simple steps:
+
+* **Download**: Obtain the latest application package from the [Windows build](https://github.com/MichaelHGitHub/EasyPlayer/blob/main/Release/Windows/EasyPlay_x64_Release.zip).
+* **Extract**: Unzip the contents into a folder on your computer. For example, you can use the folder `C:\EasyPlayer`.
+* **Run**: Launch the application by running `EasyPlayer.exe`.
+* **Tip**: Right-click `EasyPlayer.exe` and select "Send to > Desktop (create shortcut)" for quick access.
+* **Speech Model Download**: On first transcription request, the app will automatically download the quantized SenseVoice-Small ASR model (~226 MiB) for local offline transcription.
+
+### Android
+To install EasyPlayer on your Android device:
+
+* **Download**: You can either download the APK file directly on your phone's web browser, or download it on your PC and copy it to your phone. Get the APK here: [app-release.apk](https://github.com/MichaelHGitHub/EasyPlayer/blob/main/Release/Android/app-release.apk).
+* **Install**: Open your phone's File Explorer or a similar app, locate the downloaded `app-release.apk` file, and tap it to install.
+* **Permissions**:
+    * If a pop-up warning appears asking for permission to "Install unknown apps," follow the prompt to allow it for your file explorer or browser.
+    * When launching the app, allow any necessary permission requests (like storage/media access) so the app can scan and play media files.
+
+---
+
 ## 🌟 Key Features
 
 *   **Universal Format Support**: Powered by `libmpv` (FFmpeg backend via `media_kit`).
