@@ -27,7 +27,8 @@ class _LocalizationHarnessState extends State<_LocalizationHarness> {
                 value: _locale,
                 items: const [
                   DropdownMenuItem(value: Locale('en'), child: Text('English')),
-                  DropdownMenuItem(value: Locale('zh', 'CN'), child: Text('简体中文')),
+                  DropdownMenuItem(
+                      value: Locale('zh', 'CN'), child: Text('简体中文')),
                 ],
                 onChanged: (locale) {
                   if (locale != null) setState(() => _locale = locale);
@@ -42,9 +43,15 @@ class _LocalizationHarnessState extends State<_LocalizationHarness> {
 }
 
 void main() {
-  testWidgets('updates application strings when locale changes to Chinese', (tester) async {
+  testWidgets('updates application strings when locale changes to Chinese',
+      (tester) async {
     await tester.pumpWidget(const _LocalizationHarness());
     expect(find.text('Settings'), findsOneWidget);
+    expect(
+      AppLocalizations.of(tester.element(find.text('Settings')))!
+          .transcriptMissing,
+      'No transcript file found, use the next button to specify one or generate the script with AI.',
+    );
 
     await tester.tap(find.byType(DropdownButton<Locale>));
     await tester.pumpAndSettle();
@@ -52,5 +59,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('设置'), findsOneWidget);
+    expect(
+      AppLocalizations.of(tester.element(find.text('设置')))!.loadSubtitle,
+      '加载字幕',
+    );
   });
 }

@@ -78,6 +78,16 @@ class CaptionController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setLoadedSidecar(SidecarSubtitle sidecar, List<SubtitleCue> cues) {
+    _sidecars = [
+      sidecar,
+      ..._sidecars.where((existing) => existing.path != sidecar.path),
+    ];
+    _selectedSidecar = sidecar;
+    _sourceType = SubtitleSourceType.sidecar;
+    setCues(cues);
+  }
+
   Future<void> setSourceType(SubtitleSourceType type, {SidecarSubtitle? sidecar}) async {
     _sourceType = type;
     _selectedSidecar = sidecar;

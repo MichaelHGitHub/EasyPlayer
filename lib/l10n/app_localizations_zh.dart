@@ -247,7 +247,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String get speechRecognitionFailed => '语音识别失败。';
 
   @override
-  String get transcriptMissing => '未找到字幕文件。请使用“开始 AI 转录”按钮生成字幕脚本。';
+  String get transcriptMissing => '未找到字幕文件，请使用下方按钮指定字幕文件，或使用 AI 生成字幕脚本。';
+
+  @override
+  String get loadSubtitle => '加载字幕';
+
+  @override
+  String get subtitleFiles => '字幕文件';
+
+  @override
+  String failedToLoadSubtitle(Object error) {
+    return '加载字幕失败：$error';
+  }
+
+  @override
+  String get invalidSubtitleFile => '所选文件中未找到带时间戳的字幕。';
 
   @override
   String get startAiTranscription => '开始 AI 转录';

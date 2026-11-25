@@ -1,14 +1,17 @@
 import 'dart:io';
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show ScrollDirection;
 import 'package:path_provider/path_provider.dart';
 import '../../controllers/ab_repeat_controller.dart';
 import '../../controllers/caption_controller.dart';
 import '../../controllers/player_controller.dart';
+import '../../core/constants/app_constants.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/asr_state.dart';
 import '../../models/subtitle_cue.dart';
 import '../../services/asr_service.dart';
+import '../../services/sidecar_detector.dart';
 import '../../services/subtitle_parser.dart';
 
 class TranscriptSidebar extends StatefulWidget {
@@ -172,6 +175,58 @@ class _TranscriptSidebarState extends State<TranscriptSidebar> {
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> _loadSubtitle() async {
+    final l10n = AppLocalizations.of(context)!;
+
+    try {
+      final XFile? file = await openFile(
+        acceptedTypeGroups: <XTypeGroup>[
+          XTypeGroup(
+            label: l10n.subtitleFiles,
+            extensions: const <String>['srt', 'vtt'],
+          ),
+        ],
+      );
+      if (file == null) return;
+
+      final cues = await SubtitleParser.parseFile(File(file.path));
+      if (cues.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.invalidSubtitleFile)),
+          );
+        }
+        return;
+      }
+
+      final sidecar = SidecarSubtitle(
+        path: file.path,
+        name: file.name,
+        format: AppConstants.extractExtension(file.path),
+      );
+      ASRService.instance.cancelCurrentTask();
+      widget.captionController.setLoadedSidecar(sidecar, cues);
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.failedToLoadSubtitle(error))),
+        );
+      }
+    }
+  }
+
+  Future<void> _startAiTranscription() async {
+    final item = widget.playerController.playlistController.currentItem;
+    if (item == null) return;
+
+    await widget.captionController.setSourceType(SubtitleSourceType.autoASR);
+    await ASRService.instance.startTranscription(
+      filePath: item.filePath,
+      fastHash: item.id,
+      duration: item.duration ?? widget.playerController.duration,
     );
   }
 
@@ -421,6 +476,26 @@ class _TranscriptSidebarState extends State<TranscriptSidebar> {
             },
           ),
 
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.subtitles),
+                  label: Text(l10n.loadSubtitle),
+                  onPressed: _loadSubtitle,
+                ),
+                const SizedBox(height: 8),
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.transcribe),
+                  label: Text(l10n.startAiTranscription),
+                  onPressed: _startAiTranscription,
+                ),
+              ],
+            ),
+          ),
+
           // Cues List
           Expanded(
             child: Stack(
@@ -439,22 +514,6 @@ class _TranscriptSidebarState extends State<TranscriptSidebar> {
                             const Icon(Icons.subtitles_off, size: 48, color: Colors.white30),
                             const SizedBox(height: 12),
                             Text(l10n.noTranscriptAvailable, style: const TextStyle(color: Colors.white54)),
-                            const SizedBox(height: 8),
-                            ElevatedButton.icon(
-                              icon: const Icon(Icons.transcribe),
-                              label: Text(l10n.startAiTranscription),
-                              onPressed: () {
-                                final item = widget.playerController.playlistController.currentItem;
-                                if (item != null) {
-                                  widget.captionController.setSourceType(SubtitleSourceType.autoASR);
-                                  ASRService.instance.startTranscription(
-                                    filePath: item.filePath,
-                                    fastHash: item.id,
-                                    duration: item.duration ?? widget.playerController.duration,
-                                  );
-                                }
-                              },
-                            ),
                           ],
                         ),
                       );

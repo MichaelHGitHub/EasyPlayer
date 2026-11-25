@@ -250,7 +250,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get transcriptMissing =>
-      'No transcript file found. Please use the \"Start AI Transcription\" button to generate a script.';
+      'No transcript file found, use the next button to specify one or generate the script with AI.';
+
+  @override
+  String get loadSubtitle => 'Load Subtitle';
+
+  @override
+  String get subtitleFiles => 'Subtitle Files';
+
+  @override
+  String failedToLoadSubtitle(Object error) {
+    return 'Failed to load subtitle: $error';
+  }
+
+  @override
+  String get invalidSubtitleFile =>
+      'No timed subtitles were found in the selected file.';
 
   @override
   String get startAiTranscription => 'Start AI Transcription';

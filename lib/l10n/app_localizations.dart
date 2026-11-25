@@ -569,8 +569,32 @@ abstract class AppLocalizations {
   /// No description provided for @transcriptMissing.
   ///
   /// In en, this message translates to:
-  /// **'No transcript file found. Please use the \"Start AI Transcription\" button to generate a script.'**
+  /// **'No transcript file found, use the next button to specify one or generate the script with AI.'**
   String get transcriptMissing;
+
+  /// No description provided for @loadSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Load Subtitle'**
+  String get loadSubtitle;
+
+  /// No description provided for @subtitleFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtitle Files'**
+  String get subtitleFiles;
+
+  /// No description provided for @failedToLoadSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load subtitle: {error}'**
+  String failedToLoadSubtitle(Object error);
+
+  /// No description provided for @invalidSubtitleFile.
+  ///
+  /// In en, this message translates to:
+  /// **'No timed subtitles were found in the selected file.'**
+  String get invalidSubtitleFile;
 
   /// No description provided for @startAiTranscription.
   ///
