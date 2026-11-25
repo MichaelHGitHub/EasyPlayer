@@ -806,6 +806,18 @@ abstract class AppLocalizations {
   /// **'Playlist Queue'**
   String get playlistQueue;
 
+  /// No description provided for @showQueuePanel.
+  ///
+  /// In en, this message translates to:
+  /// **'Show Queue Panel'**
+  String get showQueuePanel;
+
+  /// No description provided for @hideQueuePanel.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide Queue Panel'**
+  String get hideQueuePanel;
+
   /// No description provided for @sequential.
   ///
   /// In en, this message translates to:

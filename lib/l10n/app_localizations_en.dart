@@ -389,6 +389,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get playlistQueue => 'Playlist Queue';
 
   @override
+  String get showQueuePanel => 'Show Queue Panel';
+
+  @override
+  String get hideQueuePanel => 'Hide Queue Panel';
+
+  @override
   String get sequential => 'Sequential';
 
   @override

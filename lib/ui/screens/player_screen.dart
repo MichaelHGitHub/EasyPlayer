@@ -4,6 +4,7 @@ import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:window_manager/window_manager.dart';
 
 import '../../controllers/ab_repeat_controller.dart';
 import '../../controllers/caption_controller.dart';
@@ -41,6 +42,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
   bool _isSidebarOpen = false;
   bool _isFullscreen = false;
+  bool _isPlaylistPanelVisible = true;
   bool _areControlsVisible = true;
   Timer? _controlsTimer;
   DateTime? _controlsShowTime;
@@ -157,19 +159,34 @@ class _PlayerScreenState extends State<PlayerScreen> {
     }
   }
 
-  void _toggleFullscreen() {
+  Future<void> _toggleFullscreen() async {
+    final bool enteringFullscreen = !_isFullscreen;
+
+    if (Platform.isWindows) {
+      await windowManager.setFullScreen(enteringFullscreen);
+    } else {
+      await SystemChrome.setEnabledSystemUIMode(
+        enteringFullscreen ? SystemUiMode.immersiveSticky : SystemUiMode.edgeToEdge,
+      );
+    }
+
+    if (!mounted) return;
     setState(() {
-      _isFullscreen = !_isFullscreen;
-      if (_isFullscreen) {
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+      _isFullscreen = enteringFullscreen;
+      if (enteringFullscreen) {
         _areControlsVisible = true;
         _controlsShowTime = DateTime.now();
         _startControlsTimer();
       } else {
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
         _cancelControlsTimer();
         _areControlsVisible = true;
       }
+    });
+  }
+
+  void _togglePlaylistPanel() {
+    setState(() {
+      _isPlaylistPanelVisible = !_isPlaylistPanelVisible;
     });
   }
 
@@ -367,7 +384,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final bool showPlaylistPanel = MediaQuery.sizeOf(context).width >= 1000 && !_isFullscreen;
+    final bool isDesktopViewport = MediaQuery.sizeOf(context).width >= 1000;
+    final bool showPlaylistPanel =
+        isDesktopViewport && !_isFullscreen && _isPlaylistPanelVisible;
 
     return PopScope(
       canPop: false,
@@ -381,14 +400,14 @@ class _PlayerScreenState extends State<PlayerScreen> {
         onKeyEvent: _handleKeyEvent,
         child: Scaffold(
           backgroundColor: Colors.black,
-          drawer: showPlaylistPanel
-              ? null
-              : PlaylistDrawer(
+          drawer: !isDesktopViewport || _isFullscreen
+              ? PlaylistDrawer(
                   playlistController: _playlistController,
                   playerController: _playerController,
                   onOpenFile: _openFilePicker,
                   onOpenFolder: _openFolderPicker,
-                ),
+                )
+              : null,
           appBar: _isFullscreen
               ? null
               : AppBar(
@@ -398,6 +417,18 @@ class _PlayerScreenState extends State<PlayerScreen> {
                     style: const TextStyle(fontSize: 16),
                   ),
                   actions: [
+                    if (isDesktopViewport && !_isFullscreen)
+                      IconButton(
+                        icon: Icon(
+                          _isPlaylistPanelVisible
+                              ? Icons.view_sidebar
+                              : Icons.view_sidebar_outlined,
+                        ),
+                        tooltip: _isPlaylistPanelVisible
+                            ? l10n.hideQueuePanel
+                            : l10n.showQueuePanel,
+                        onPressed: _togglePlaylistPanel,
+                      ),
                     IconButton(
                       icon: const Icon(Icons.file_open),
                       tooltip: l10n.openFile,
@@ -440,13 +471,20 @@ class _PlayerScreenState extends State<PlayerScreen> {
                 Expanded(
                   child: Row(
                     children: [
-                      if (showPlaylistPanel)
-                        PlaylistDrawer(
-                          playlistController: _playlistController,
-                          playerController: _playerController,
-                          onOpenFile: _openFilePicker,
-                          onOpenFolder: _openFolderPicker,
-                          asPanel: true,
+                      if (isDesktopViewport && !_isFullscreen)
+                        AnimatedSize(
+                          duration: const Duration(milliseconds: 200),
+                          curve: Curves.easeInOut,
+                          alignment: Alignment.centerLeft,
+                          child: showPlaylistPanel
+                              ? PlaylistDrawer(
+                                  playlistController: _playlistController,
+                                  playerController: _playerController,
+                                  onOpenFile: _openFilePicker,
+                                  onOpenFolder: _openFolderPicker,
+                                  asPanel: true,
+                                )
+                              : const SizedBox.shrink(),
                         ),
 
                       // Main Viewport (Video or Audio Visualizer)

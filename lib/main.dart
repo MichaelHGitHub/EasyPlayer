@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:window_manager/window_manager.dart';
 
 import 'core/constants/app_constants.dart';
 import 'core/theme/app_theme.dart';
@@ -10,6 +13,23 @@ import 'ui/screens/player_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  if (Platform.isWindows) {
+    await windowManager.ensureInitialized();
+    await windowManager.waitUntilReadyToShow(
+      const WindowOptions(
+        size: Size(1280, 720),
+        minimumSize: Size(800, 520),
+        center: true,
+        backgroundColor: Colors.black,
+        title: AppConstants.appName,
+      ),
+      () async {
+        await windowManager.show();
+        await windowManager.focus();
+      },
+    );
+  }
 
   // 1. Initialize deterministic local storage directories
   await StoragePaths.initialize();

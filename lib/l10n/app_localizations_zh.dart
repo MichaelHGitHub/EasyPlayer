@@ -379,6 +379,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get playlistQueue => '播放队列';
 
   @override
+  String get showQueuePanel => '显示播放队列';
+
+  @override
+  String get hideQueuePanel => '隐藏播放队列';
+
+  @override
   String get sequential => '顺序播放';
 
   @override

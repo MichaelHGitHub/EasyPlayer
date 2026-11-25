@@ -41,9 +41,13 @@ class PlaylistDrawer extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          l10n.playlistQueue,
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white),
+                        Flexible(
+                          child: Text(
+                            l10n.playlistQueue,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white),
+                          ),
                         ),
                         Row(
                           children: [
@@ -74,37 +78,42 @@ class PlaylistDrawer extends StatelessWidget {
                     const SizedBox(height: 12),
                     // Play Mode & Repeat Mode Selectors
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         // Play Mode
-                        DropdownButton<PlayMode>(
-                          value: playlistController.playMode,
-                          dropdownColor: const Color(0xFF0F172A),
-                          style: const TextStyle(color: Colors.white, fontSize: 12),
-                          underline: const SizedBox(),
-                          items: [
-                            DropdownMenuItem(value: PlayMode.sequential, child: Text(l10n.sequential)),
-                            DropdownMenuItem(value: PlayMode.single, child: Text(l10n.single)),
-                            DropdownMenuItem(value: PlayMode.shuffle, child: Text(l10n.shuffle)),
-                          ],
-                          onChanged: (mode) {
-                            if (mode != null) playlistController.setModes(playMode: mode);
-                          },
+                        Expanded(
+                          child: DropdownButton<PlayMode>(
+                            isExpanded: true,
+                            value: playlistController.playMode,
+                            dropdownColor: const Color(0xFF0F172A),
+                            style: const TextStyle(color: Colors.white, fontSize: 12),
+                            underline: const SizedBox(),
+                            items: [
+                              DropdownMenuItem(value: PlayMode.sequential, child: Text(l10n.sequential)),
+                              DropdownMenuItem(value: PlayMode.single, child: Text(l10n.single)),
+                              DropdownMenuItem(value: PlayMode.shuffle, child: Text(l10n.shuffle)),
+                            ],
+                            onChanged: (mode) {
+                              if (mode != null) playlistController.setModes(playMode: mode);
+                            },
+                          ),
                         ),
                         // Repeat Mode
-                        DropdownButton<RepeatMode>(
-                          value: playlistController.repeatMode,
-                          dropdownColor: const Color(0xFF0F172A),
-                          style: const TextStyle(color: Colors.white, fontSize: 12),
-                          underline: const SizedBox(),
-                          items: [
-                            DropdownMenuItem(value: RepeatMode.none, child: Text(l10n.noRepeat)),
-                            DropdownMenuItem(value: RepeatMode.track, child: Text(l10n.repeatTrack)),
-                            DropdownMenuItem(value: RepeatMode.folder, child: Text(l10n.repeatFolder)),
-                          ],
-                          onChanged: (mode) {
-                            if (mode != null) playlistController.setModes(repeatMode: mode);
-                          },
+                        Expanded(
+                          child: DropdownButton<RepeatMode>(
+                            isExpanded: true,
+                            value: playlistController.repeatMode,
+                            dropdownColor: const Color(0xFF0F172A),
+                            style: const TextStyle(color: Colors.white, fontSize: 12),
+                            underline: const SizedBox(),
+                            items: [
+                              DropdownMenuItem(value: RepeatMode.none, child: Text(l10n.noRepeat)),
+                              DropdownMenuItem(value: RepeatMode.track, child: Text(l10n.repeatTrack)),
+                              DropdownMenuItem(value: RepeatMode.folder, child: Text(l10n.repeatFolder)),
+                            ],
+                            onChanged: (mode) {
+                              if (mode != null) playlistController.setModes(repeatMode: mode);
+                            },
+                          ),
                         ),
                       ],
                     ),
@@ -190,7 +199,7 @@ class PlaylistDrawer extends StatelessWidget {
 
     if (asPanel) {
       return Container(
-        width: 280,
+        width: 320,
         decoration: const BoxDecoration(
           color: Color(0xFF1E293B),
           border: Border(right: BorderSide(color: Colors.white12)),
