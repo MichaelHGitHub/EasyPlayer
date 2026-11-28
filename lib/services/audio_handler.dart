@@ -14,18 +14,30 @@ class EasyAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandler {
     final String itemTitle = (item.title != null && item.title!.isNotEmpty) ? item.title! : item.fileName;
     final String itemArtist = (item.artist != null && item.artist!.isNotEmpty) ? item.artist! : 'EasyPlayer';
     final String itemAlbum = (item.album != null && item.album!.isNotEmpty) ? item.album! : 'EasyPlayer';
+    final Duration effectiveDuration = duration > Duration.zero ? duration : (item.duration ?? Duration.zero);
+    final Uri? artUri = (item.coverArtPath != null && item.coverArtPath!.isNotEmpty)
+        ? Uri.file(item.coverArtPath!)
+        : null;
 
-    final mediaItem = MediaItem(
+    final currentMediaItem = mediaItem.value;
+    if (currentMediaItem != null &&
+        currentMediaItem.id == item.id &&
+        currentMediaItem.title == itemTitle &&
+        currentMediaItem.artist == itemArtist &&
+        currentMediaItem.duration == effectiveDuration &&
+        currentMediaItem.artUri == artUri) {
+      return;
+    }
+
+    final newMediaItem = MediaItem(
       id: item.id,
       album: itemAlbum,
       title: itemTitle,
       artist: itemArtist,
-      duration: duration > Duration.zero ? duration : item.duration,
-      artUri: (item.coverArtPath != null && item.coverArtPath!.isNotEmpty)
-          ? Uri.file(item.coverArtPath!)
-          : null,
+      duration: effectiveDuration,
+      artUri: artUri,
     );
-    this.mediaItem.add(mediaItem);
+    mediaItem.add(newMediaItem);
   }
 
   void updatePlaybackState({
@@ -36,32 +48,50 @@ class EasyAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandler {
     required bool hasNext,
     required bool hasPrevious,
   }) {
-    final controls = [
-      if (hasPrevious) MediaControl.skipToPrevious,
-      MediaControl.rewind,
-      isPlaying ? MediaControl.pause : MediaControl.play,
-      MediaControl.fastForward,
-      if (hasNext) MediaControl.skipToNext,
-      MediaControl.stop,
-    ];
+    final controls = <MediaControl>[];
+    int? prevIndex;
+    int playPauseIndex;
+    int? nextIndex;
 
-    const int prevIndex = 0;
-    final int playPauseIndex = hasPrevious ? 2 : 1;
-    final int nextIndex = hasPrevious ? 4 : 3;
+    if (hasPrevious) {
+      prevIndex = controls.length;
+      controls.add(MediaControl.skipToPrevious);
+    }
+    controls.add(MediaControl.rewind);
+
+    playPauseIndex = controls.length;
+    controls.add(isPlaying ? MediaControl.pause : MediaControl.play);
+
+    controls.add(MediaControl.fastForward);
+
+    if (hasNext) {
+      nextIndex = controls.length;
+      controls.add(MediaControl.skipToNext);
+    }
+    controls.add(MediaControl.stop);
+
+    final compactIndices = <int>[];
+    if (prevIndex != null) compactIndices.add(prevIndex);
+    compactIndices.add(playPauseIndex);
+    if (nextIndex != null) compactIndices.add(nextIndex);
 
     playbackState.add(
       PlaybackState(
         controls: controls,
-        systemActions: const {
+        systemActions: {
           MediaAction.seek,
           MediaAction.seekForward,
           MediaAction.seekBackward,
+          MediaAction.play,
+          MediaAction.pause,
+          MediaAction.playPause,
+          MediaAction.stop,
+          if (hasNext) MediaAction.skipToNext,
+          if (hasPrevious) MediaAction.skipToPrevious,
+          MediaAction.fastForward,
+          MediaAction.rewind,
         },
-        androidCompactActionIndices: [
-          hasPrevious ? prevIndex : 1,
-          playPauseIndex,
-          hasNext ? nextIndex : playPauseIndex,
-        ],
+        androidCompactActionIndices: compactIndices,
         processingState: AudioProcessingState.ready,
         playing: isPlaying,
         updatePosition: position,

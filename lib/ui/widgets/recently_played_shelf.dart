@@ -96,9 +96,11 @@ class _RecentlyPlayedShelfState extends State<RecentlyPlayedShelf> {
                         : 0.0;
 
                 return InkWell(
-                  onTap: () {
-                    widget.playlistController.setSingleItem(item.filePath);
-                    widget.playerController.openMedia(item);
+                  onTap: () async {
+                    await widget.playlistController.setSingleItem(item.filePath);
+                    if (widget.playlistController.currentItem != null) {
+                      await widget.playerController.openMedia(widget.playlistController.currentItem!);
+                    }
                     widget.onMediaSelected();
                   },
                   child: Container(

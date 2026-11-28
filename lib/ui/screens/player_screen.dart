@@ -52,6 +52,19 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
   static const MethodChannel _appChannel = MethodChannel('com.pandasoft.easyplayer/app');
 
+  Future<void> _requestNotificationPermission() async {
+    if (Platform.isAndroid) {
+      try {
+        final status = await Permission.notification.status;
+        if (!status.isGranted) {
+          await Permission.notification.request();
+        }
+      } catch (e) {
+        debugPrint('Failed to request notification permission: $e');
+      }
+    }
+  }
+
   Future<void> _moveToBackground() async {
     try {
       await _appChannel.invokeMethod('moveToBackground');
@@ -63,6 +76,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
   @override
   void initState() {
     super.initState();
+    _requestNotificationPermission();
     _playlistController = PlaylistController();
     _captionController = CaptionController();
     _abRepeatController = ABRepeatController();

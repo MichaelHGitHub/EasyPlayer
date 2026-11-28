@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:audio_service/audio_service.dart' hide MediaItem;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:media_kit/media_kit.dart';
@@ -194,6 +195,18 @@ class PlayerController extends ChangeNotifier {
     final MediaItem? next = playlistController.getNextTrack();
     if (next != null) {
       openMedia(next);
+    } else {
+      _isPlaying = false;
+      final handler = globalAudioHandler;
+      if (handler != null) {
+        handler.playbackState.add(
+          handler.playbackState.value.copyWith(
+            processingState: AudioProcessingState.completed,
+            playing: false,
+          ),
+        );
+      }
+      notifyListeners();
     }
   }
 
@@ -209,7 +222,20 @@ class PlayerController extends ChangeNotifier {
   Future<void> play() => player.play();
   Future<void> pause() => player.pause();
   Future<void> playOrPause() => player.playOrPause();
-  Future<void> stop() => player.stop();
+  Future<void> stop() async {
+    await player.stop();
+    _isPlaying = false;
+    final handler = globalAudioHandler;
+    if (handler != null) {
+      handler.playbackState.add(
+        handler.playbackState.value.copyWith(
+          processingState: AudioProcessingState.idle,
+          playing: false,
+        ),
+      );
+    }
+    notifyListeners();
+  }
 
   Future<void> seek(Duration position) => player.seek(position);
 
