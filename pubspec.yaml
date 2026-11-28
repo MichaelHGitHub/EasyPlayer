@@ -14,11 +14,12 @@ dependencies:
     sdk: flutter
   intl: ^0.20.3
 
-  # Media Playback Engine (libmpv + FFmpeg)
+  # Media Playback Engine (libmpv + FFmpeg) & Lock Screen Audio Service
   media_kit: ^1.1.10
   media_kit_video: ^1.0.6
   media_kit_libs_windows_video: ^1.0.8
   media_kit_libs_android_video: ^1.2.6
+  audio_service: ^0.18.15
 
   # Local Storage & Database
   sqflite: ^2.3.3+1

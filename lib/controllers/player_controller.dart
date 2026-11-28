@@ -8,6 +8,7 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 import '../core/constants/app_constants.dart';
+import '../main.dart';
 import '../models/media_item.dart';
 import '../models/playback_mode.dart';
 import '../services/asr_service.dart';
@@ -72,7 +73,26 @@ class PlayerController extends ChangeNotifier {
       ),
     );
 
+    globalAudioHandler?.attachPlayerController(this);
     _setupListeners();
+  }
+
+  void _syncAudioHandler() {
+    final handler = globalAudioHandler;
+    if (handler == null) return;
+
+    final MediaItem? current = playlistController.currentItem;
+    if (current != null) {
+      handler.updateEasyMediaItem(current, _duration);
+      handler.updatePlaybackState(
+        isPlaying: _isPlaying,
+        position: _position,
+        duration: _duration,
+        speed: _speed,
+        hasNext: playlistController.getNextTrack() != null,
+        hasPrevious: playlistController.getPreviousTrack() != null,
+      );
+    }
   }
 
   void _setupListeners() {
@@ -95,16 +115,19 @@ class PlayerController extends ChangeNotifier {
         DatabaseService.instance.savePlaybackPosition(current.id, posMs);
       }
 
+      _syncAudioHandler();
       notifyListeners();
     });
 
     player.stream.duration.listen((dur) {
       _duration = dur;
+      _syncAudioHandler();
       notifyListeners();
     });
 
     player.stream.playing.listen((playing) {
       _isPlaying = playing;
+      _syncAudioHandler();
       notifyListeners();
     });
 
@@ -115,6 +138,7 @@ class PlayerController extends ChangeNotifier {
 
     player.stream.rate.listen((r) {
       _speed = r;
+      _syncAudioHandler();
       notifyListeners();
     });
 
@@ -162,6 +186,8 @@ class PlayerController extends ChangeNotifier {
       captionController.setCues(cachedCues);
       // Keep caption OFF by default for each media item. User can turn it on manually.
     }
+
+    _syncAudioHandler();
   }
 
   void _handleTrackCompleted() {

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -7,12 +8,33 @@ import 'core/constants/app_constants.dart';
 import 'core/theme/app_theme.dart';
 import 'core/utils/storage_paths.dart';
 import 'l10n/app_localizations.dart';
+import 'services/audio_handler.dart';
 import 'services/database_service.dart';
 import 'services/settings_service.dart';
 import 'ui/screens/player_screen.dart';
 
+EasyAudioHandler? globalAudioHandler;
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Safely initialize AudioService for Lock Screen Media Controls & Background Playback
+  try {
+    globalAudioHandler = await AudioService.init(
+      builder: () => EasyAudioHandler(),
+      config: const AudioServiceConfig(
+        androidNotificationChannelId: 'com.pandasoft.easyplayer.audio',
+        androidNotificationChannelName: 'EasyPlayer Playback',
+        androidNotificationChannelDescription: 'EasyPlayer lock screen media controls',
+        androidNotificationOngoing: true,
+        androidStopForegroundOnPause: false,
+        androidNotificationIcon: 'mipmap/ic_launcher',
+        androidShowNotificationBadge: true,
+      ),
+    );
+  } catch (e, stack) {
+    debugPrint('AudioService initialization error: $e\n$stack');
+  }
 
   if (Platform.isWindows) {
     await windowManager.ensureInitialized();
