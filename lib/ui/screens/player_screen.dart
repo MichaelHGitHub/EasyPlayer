@@ -17,6 +17,7 @@ import '../../services/asr_service.dart';
 import '../../services/settings_service.dart';
 import '../../services/sleep_timer_service.dart';
 import '../widgets/audio_visualizer_viewport.dart';
+import '../widgets/media_details_dialog.dart';
 import '../widgets/playback_controls.dart';
 import '../widgets/playlist_drawer.dart';
 import '../widgets/recently_played_shelf.dart';
@@ -412,10 +413,38 @@ class _PlayerScreenState extends State<PlayerScreen> {
               ? null
               : AppBar(
                   backgroundColor: const Color(0xFF0F172A),
-                  title: Text(
-                    _playlistController.currentItem?.fileName ?? 'EasyPlayer',
-                    style: const TextStyle(fontSize: 16),
-                  ),
+                  title: _playlistController.currentItem != null
+                      ? InkWell(
+                          borderRadius: BorderRadius.circular(8),
+                          onTap: () {
+                            MediaDetailsDialog.show(
+                              context,
+                              item: _playlistController.currentItem!,
+                              playerController: _playerController,
+                            );
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    _playlistController.currentItem!.fileName,
+                                    style: const TextStyle(fontSize: 16),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                const Icon(Icons.info_outline, size: 18, color: Color(0xFF818CF8)),
+                              ],
+                            ),
+                          ),
+                        )
+                      : const Text(
+                          'EasyPlayer',
+                          style: TextStyle(fontSize: 16),
+                        ),
                   actions: [
                     if (isDesktopViewport && !_isFullscreen)
                       IconButton(

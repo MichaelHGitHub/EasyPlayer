@@ -5,7 +5,9 @@ import 'package:path/path.dart' as p;
 import '../../controllers/caption_controller.dart';
 import '../../controllers/player_controller.dart';
 import '../../core/utils/storage_paths.dart';
+import '../../l10n/app_localizations.dart';
 import '../../models/media_item.dart';
+import 'media_details_dialog.dart';
 import 'subtitle_overlay.dart';
 
 class AudioVisualizerViewport extends StatefulWidget {
@@ -85,7 +87,7 @@ class _AudioVisualizerViewportState extends State<AudioVisualizerViewport> {
     return null;
   }
 
-  void _onViewportTap(MediaItem? item) async {
+  void _onPandaImageTap(MediaItem? item) async {
     if (_showFullCover) {
       setState(() {
         _showFullCover = false;
@@ -94,11 +96,32 @@ class _AudioVisualizerViewportState extends State<AudioVisualizerViewport> {
     }
 
     final String? path = await _findCoverFile(item);
-    if (path != null && mounted) {
-      setState(() {
-        _coverPath = path;
-        _showFullCover = true;
-      });
+    if (mounted) {
+      if (path != null) {
+        setState(() {
+          _coverPath = path;
+          _showFullCover = true;
+        });
+      } else {
+        final l10n = AppLocalizations.of(context)!;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.noCoverArt),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
+
+  void _onTitleTap(MediaItem? item) {
+    if (item != null) {
+      MediaDetailsDialog.show(
+        context,
+        item: item,
+        playerController: widget.playerController,
+        coverPath: _coverPath,
+      );
     }
   }
 
@@ -124,17 +147,21 @@ class _AudioVisualizerViewportState extends State<AudioVisualizerViewport> {
         }
         _lastCaptionsEnabled = captionsEnabled;
 
-        return GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: captionsEnabled ? null : () => _onViewportTap(item),
-          child: Container(
-            color: captionsEnabled ? Colors.black : const Color(0xFF0F172A),
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                if (!captionsEnabled && _showFullCover && _coverPath != null && File(_coverPath!).existsSync()) ...[
-                  // Full Cover View Screen
-                  Center(
+        return Container(
+          color: captionsEnabled ? Colors.black : const Color(0xFF0F172A),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              if (!captionsEnabled && _showFullCover && _coverPath != null && File(_coverPath!).existsSync()) ...[
+                // Full Cover View Screen (Tap anywhere to close cover view)
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    setState(() {
+                      _showFullCover = false;
+                    });
+                  },
+                  child: Center(
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: ClipRRect(
@@ -146,85 +173,102 @@ class _AudioVisualizerViewportState extends State<AudioVisualizerViewport> {
                       ),
                     ),
                   ),
-                ] else if (!captionsEnabled) ...[
-                  // Default Playback Viewport Screen (Panda artwork + title + visualizer)
-                  Center(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // Album Art / PandaSoft Artwork
-                          Container(
-                            width: 220,
-                            height: 220,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFF6366F1).withValues(alpha: 0.3),
-                                  blurRadius: 24,
-                                  spreadRadius: 4,
+                ),
+              ] else if (!captionsEnabled) ...[
+                // Default Playback Viewport Screen (Panda artwork + title + visualizer)
+                Center(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Album Art / PandaSoft Artwork (Clicking image toggles cover view)
+                        MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: GestureDetector(
+                            onTap: () => _onPandaImageTap(item),
+                            child: Container(
+                              width: 220,
+                              height: 220,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+                                    blurRadius: 24,
+                                    spreadRadius: 4,
+                                  ),
+                                ],
+                              ),
+                              clipBehavior: Clip.antiAlias,
+                              child: item?.coverArtPath != null && File(item!.coverArtPath!).existsSync()
+                                  ? Image.file(File(item.coverArtPath!), fit: BoxFit.cover)
+                                  : Image.asset(
+                                      'artwork/logo_transparent.png',
+                                      fit: BoxFit.contain,
+                                      errorBuilder: (_, __, ___) => const Icon(
+                                        Icons.music_note,
+                                        size: 96,
+                                        color: Color(0xFF818CF8),
+                                      ),
+                                    ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Track Title & Artist (Clicking opens Audio Details Dialog)
+                        MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: GestureDetector(
+                            onTap: () => _onTitleTap(item),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                                  child: Text(
+                                    item?.title ?? item?.fileName ?? 'EasyPlayer',
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                                  child: Text(
+                                    item?.artist ?? item?.album ?? 'PandaSoft',
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Color(0xFF94A3B8),
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
                               ],
                             ),
-                            clipBehavior: Clip.antiAlias,
-                            child: item?.coverArtPath != null && File(item!.coverArtPath!).existsSync()
-                                ? Image.file(File(item.coverArtPath!), fit: BoxFit.cover)
-                                : Image.asset(
-                                    'artwork/logo_transparent.png',
-                                    fit: BoxFit.contain,
-                                    errorBuilder: (_, __, ___) => const Icon(
-                                      Icons.music_note,
-                                      size: 96,
-                                      color: Color(0xFF818CF8),
-                                    ),
-                                  ),
                           ),
-                          const SizedBox(height: 24),
+                        ),
+                        const SizedBox(height: 24),
 
-                          // Track Title & Artist (Stationary, zero layout shifts)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 32.0),
-                            child: Text(
-                              item?.title ?? item?.fileName ?? 'EasyPlayer',
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 32.0),
-                            child: Text(
-                              item?.artist ?? item?.album ?? 'PandaSoft',
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Color(0xFF94A3B8),
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-
-                          // Separated, Fixed-Height Waveform Visualizer Bars (Fixed 36px box)
-                          VisualizerBars(isPlaying: isPlaying),
-                        ],
-                      ),
+                        // Separated, Fixed-Height Waveform Visualizer Bars (Fixed 36px box)
+                        VisualizerBars(isPlaying: isPlaying),
+                      ],
                     ),
                   ),
-                ],
-
-                // Subtitle Overlay for Audio Speech Transcripts
-                SubtitleOverlay(captionController: widget.captionController),
+                ),
               ],
-            ),
+
+              // Subtitle Overlay for Audio Speech Transcripts
+              SubtitleOverlay(captionController: widget.captionController),
+            ],
           ),
         );
       },

@@ -169,5 +169,24 @@
   "interactiveTranscriptPanel": "交互字幕文稿面板",
   "snapshotFrameShortcut": "画面截图（S）",
   "snapshotSavedPath": "截图已保存：{path}",
-  "snapshotSaveFailed": "截图保存失败：{error}"
+  "snapshotSaveFailed": "截图保存失败：{error}",
+
+  "mediaDetails": "媒体详细信息",
+  "audioDetails": "音频详细信息",
+  "videoDetails": "视频详细信息",
+  "fileName": "文件名",
+  "titleLabel": "标题",
+  "artistLabel": "艺术家 / 作者",
+  "albumLabel": "专辑",
+  "durationLabel": "时长",
+  "fileSizeLabel": "文件大小",
+  "filePathLabel": "文件路径",
+  "fileFormatLabel": "文件格式",
+  "dateModifiedLabel": "修改时间",
+  "videoResolutionLabel": "画面分辨率",
+  "videoCodecLabel": "视频编码",
+  "audioCodecLabel": "音频编码",
+  "noCoverArt": "暂无专辑封面图片。",
+  "copyPath": "复制路径",
+  "pathCopied": "文件路径已复制到剪贴板"
 }

@@ -169,5 +169,24 @@
   "interactiveTranscriptPanel": "Interactive Transcript Panel",
   "snapshotFrameShortcut": "Snapshot Frame (S)",
   "snapshotSavedPath": "Snapshot saved: {path}",
-  "snapshotSaveFailed": "Failed to save screenshot: {error}"
+  "snapshotSaveFailed": "Failed to save screenshot: {error}",
+
+  "mediaDetails": "Media Details",
+  "audioDetails": "Audio Details",
+  "videoDetails": "Video Details",
+  "fileName": "File Name",
+  "titleLabel": "Title",
+  "artistLabel": "Artist / Author",
+  "albumLabel": "Album",
+  "durationLabel": "Duration",
+  "fileSizeLabel": "File Size",
+  "filePathLabel": "File Path",
+  "fileFormatLabel": "Format",
+  "dateModifiedLabel": "Date Modified",
+  "videoResolutionLabel": "Resolution",
+  "videoCodecLabel": "Video Codec",
+  "audioCodecLabel": "Audio Codec",
+  "noCoverArt": "No album cover image available.",
+  "copyPath": "Copy Path",
+  "pathCopied": "Path copied to clipboard"
 }

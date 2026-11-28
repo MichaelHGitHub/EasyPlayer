@@ -519,4 +519,58 @@ class AppLocalizationsZh extends AppLocalizations {
   String snapshotSaveFailed(Object error) {
     return '截图保存失败：$error';
   }
+
+  @override
+  String get mediaDetails => '媒体详细信息';
+
+  @override
+  String get audioDetails => '音频详细信息';
+
+  @override
+  String get videoDetails => '视频详细信息';
+
+  @override
+  String get fileName => '文件名';
+
+  @override
+  String get titleLabel => '标题';
+
+  @override
+  String get artistLabel => '艺术家 / 作者';
+
+  @override
+  String get albumLabel => '专辑';
+
+  @override
+  String get durationLabel => '时长';
+
+  @override
+  String get fileSizeLabel => '文件大小';
+
+  @override
+  String get filePathLabel => '文件路径';
+
+  @override
+  String get fileFormatLabel => '文件格式';
+
+  @override
+  String get dateModifiedLabel => '修改时间';
+
+  @override
+  String get videoResolutionLabel => '画面分辨率';
+
+  @override
+  String get videoCodecLabel => '视频编码';
+
+  @override
+  String get audioCodecLabel => '音频编码';
+
+  @override
+  String get noCoverArt => '暂无专辑封面图片。';
+
+  @override
+  String get copyPath => '复制路径';
+
+  @override
+  String get pathCopied => '文件路径已复制到剪贴板';
 }

@@ -1057,6 +1057,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to save screenshot: {error}'**
   String snapshotSaveFailed(Object error);
+
+  /// No description provided for @mediaDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Media Details'**
+  String get mediaDetails;
+
+  /// No description provided for @audioDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio Details'**
+  String get audioDetails;
+
+  /// No description provided for @videoDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Video Details'**
+  String get videoDetails;
+
+  /// No description provided for @fileName.
+  ///
+  /// In en, this message translates to:
+  /// **'File Name'**
+  String get fileName;
+
+  /// No description provided for @titleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get titleLabel;
+
+  /// No description provided for @artistLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Artist / Author'**
+  String get artistLabel;
+
+  /// No description provided for @albumLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Album'**
+  String get albumLabel;
+
+  /// No description provided for @durationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration'**
+  String get durationLabel;
+
+  /// No description provided for @fileSizeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'File Size'**
+  String get fileSizeLabel;
+
+  /// No description provided for @filePathLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'File Path'**
+  String get filePathLabel;
+
+  /// No description provided for @fileFormatLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Format'**
+  String get fileFormatLabel;
+
+  /// No description provided for @dateModifiedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Date Modified'**
+  String get dateModifiedLabel;
+
+  /// No description provided for @videoResolutionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolution'**
+  String get videoResolutionLabel;
+
+  /// No description provided for @videoCodecLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Video Codec'**
+  String get videoCodecLabel;
+
+  /// No description provided for @audioCodecLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio Codec'**
+  String get audioCodecLabel;
+
+  /// No description provided for @noCoverArt.
+  ///
+  /// In en, this message translates to:
+  /// **'No album cover image available.'**
+  String get noCoverArt;
+
+  /// No description provided for @copyPath.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy Path'**
+  String get copyPath;
+
+  /// No description provided for @pathCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Path copied to clipboard'**
+  String get pathCopied;
 }
 
 class _AppLocalizationsDelegate

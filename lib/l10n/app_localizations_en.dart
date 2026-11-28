@@ -531,4 +531,58 @@ class AppLocalizationsEn extends AppLocalizations {
   String snapshotSaveFailed(Object error) {
     return 'Failed to save screenshot: $error';
   }
+
+  @override
+  String get mediaDetails => 'Media Details';
+
+  @override
+  String get audioDetails => 'Audio Details';
+
+  @override
+  String get videoDetails => 'Video Details';
+
+  @override
+  String get fileName => 'File Name';
+
+  @override
+  String get titleLabel => 'Title';
+
+  @override
+  String get artistLabel => 'Artist / Author';
+
+  @override
+  String get albumLabel => 'Album';
+
+  @override
+  String get durationLabel => 'Duration';
+
+  @override
+  String get fileSizeLabel => 'File Size';
+
+  @override
+  String get filePathLabel => 'File Path';
+
+  @override
+  String get fileFormatLabel => 'Format';
+
+  @override
+  String get dateModifiedLabel => 'Date Modified';
+
+  @override
+  String get videoResolutionLabel => 'Resolution';
+
+  @override
+  String get videoCodecLabel => 'Video Codec';
+
+  @override
+  String get audioCodecLabel => 'Audio Codec';
+
+  @override
+  String get noCoverArt => 'No album cover image available.';
+
+  @override
+  String get copyPath => 'Copy Path';
+
+  @override
+  String get pathCopied => 'Path copied to clipboard';
 }
