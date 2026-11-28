@@ -219,9 +219,25 @@ class PlayerController extends ChangeNotifier {
 
   // --- Transport Controls ---
 
-  Future<void> play() => player.play();
+  Future<void> play() async {
+    final current = playlistController.currentItem;
+    if (current != null && (player.state.playlist.medias.isEmpty || player.state.completed)) {
+      await openMedia(current);
+    } else {
+      await player.play();
+    }
+  }
+
   Future<void> pause() => player.pause();
-  Future<void> playOrPause() => player.playOrPause();
+
+  Future<void> playOrPause() async {
+    final current = playlistController.currentItem;
+    if (!_isPlaying && current != null && (player.state.playlist.medias.isEmpty || player.state.completed)) {
+      await openMedia(current);
+    } else {
+      await player.playOrPause();
+    }
+  }
   Future<void> stop() async {
     await player.stop();
     _isPlaying = false;
